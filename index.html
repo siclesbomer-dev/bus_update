@@ -149,3 +149,518 @@
     <div class="ban-icon">🚫</div>
     <div class="ban-title">Доступ заблокирован</div>
     <div class="ban-reason" id="banReasonText">Причина: Нарушение правил безопасности.</div>
+    <a href="https://t.me/Demon_of_latvia" target="_blank" class="ban-appeal-btn">Оспорить бан</a>
+  </div>
+
+  <div class="theme-toggle" onclick="toggleThemeMenu()">🎨</div>
+  <div class="theme-menu" id="themeMenu">
+    <div class="theme-opt" data-theme="blue" title="Голубая"></div>
+    <div class="theme-opt" data-theme="orange" title="FarePay"></div>
+    <div class="theme-opt" data-theme="neon" title="Cyberpunk"></div>
+    <div class="theme-opt" data-theme="purple" title="Premium"></div>
+    <div class="theme-opt" data-theme="cherry" title="Cherry"></div>
+  </div>
+
+  <div id="announcementBanner" class="announcement-banner"></div>
+
+  <section id="demoScreen" class="demo-screen">
+    <div class="demo-card">
+      <h2>Оплата проезда</h2>
+      <p id="accessText">Загрузка данных...</p>
+      
+      <button id="payButton" class="pay-btn locked">⏳ Ожидание...</button>
+      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
+      
+      <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px; display: none;">🎟️ У меня нету кода (Купить)</button>
+      
+      <div id="hackerTerminal" class="hacker-terminal"></div>
+
+      <div id="progressWrap" class="progress-wrap hidden" style="margin-top: 20px;">
+        <div class="progress-track" style="height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden;"><div id="progressBar" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.08s linear;"></div></div>
+        <div id="progressText" class="progress-text" style="margin-top: 10px; font-size: 15px; color: var(--text-muted);">Подготовка…</div>
+      </div>
+      <div style="margin-top: 20px;"><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
+    </div>
+  </section>
+
+  <section id="resultScreen" class="demo-screen result-screen hidden">
+    <div class="demo-card">
+      <div class="result-title">Процесс<br>выполнен</div>
+      <div class="result-subtitle">Переход к выбору транспорта…</div>
+    </div>
+  </section>
+
+  <section id="selectorScreen" class="selector-screen hidden">
+    <div class="selector-card">
+      <h2>Выберите транспорт</h2>
+      <p>Сначала выберите тип, затем маршрут</p>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="bus">Автобус</button>
+        <button class="type-btn" data-type="trolleybus">Троллейбус</button>
+      </div>
+      <div id="routeButtons" class="route-buttons hidden"></div>
+      <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
+    </div>
+  </section>
+
+  <div id="mainPage" class="hidden">
+    <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
+    <main class="main-container">
+      <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
+      <div id="routeTitle" class="route-title">Автобус №18</div>
+      <div class="price" id="priceDisplay">53 ₽</div>
+      <div class="info-block"><span id="payDate">—</span><br>Т/С: <span id="vehicleNumber">—</span></div>
+      <div class="qr-container"><canvas id="qrCanvas" width="400" height="400"></canvas></div>
+      <div class="timer-container">Действителен: <span id="timer" class="timer-value">00:00</span></div>
+      
+      <button id="historyBtn" class="history-btn">📜 История поездок</button>
+      <button id="openGarageModalBtn" class="garage-link">Спросили т/с?</button>
+      <button id="inspectorBtn" class="inspector-btn">🚨 Вызвать контролёра</button>
+      <div><button id="devTriggerMain" class="dev-trigger">Написать разработчику</button></div>
+    </main>
+  </div>
+
+  <div id="garageModal" class="modal-overlay">
+    <div class="modal-card"><h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p><input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 3818" maxlength="5"><div id="modalGarageError" class="modal-error"></div><div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div></div>
+  </div>
+
+  <div id="inviteModal" class="modal-overlay">
+    <div class="modal-card"><h3>🎟️ Доступ по инвайту</h3><p>Введите код <b>FARE-XXXX-XXXX</b>.</p><input id="inviteInput" class="modal-input" type="text" placeholder="FARE-XXXX-XXXX" style="text-transform: uppercase;"><div id="inviteError" class="modal-error"></div><div class="modal-actions"><button class="modal-btn cancel" onclick="closeInviteModal()">Отмена</button><button class="modal-btn save" onclick="checkInviteCode()">Проверить</button></div></div>
+  </div>
+
+  <div id="historyModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>📜 История поездок</h3>
+      <div id="historyList" class="history-list"></div>
+      <div class="modal-actions" style="margin-top: 15px;"><button class="modal-btn cancel" style="width: 100%;" onclick="document.getElementById('historyModal').classList.remove('open')">Закрыть</button></div>
+    </div>
+  </div>
+
+  <div id="devModal" class="modal-overlay">
+    <div class="dev-modal-card">
+      <div class="dev-modal-header"><div class="dev-avatar">DV</div><div><h3>Написать разработчику</h3><div class="dev-username">@Demon_of_latvia</div></div></div>
+      <p class="dev-modal-sub">Выберите тему — появится подсказка, а текст скопируется.</p>
+      <div id="devReasons" class="dev-reasons">
+        <button class="dev-reason" data-problem="Не работает на iPhone" data-answer="Только разработчик может помочь."><span class="dev-reason-ico">1</span><span>Не работает на iPhone</span></button>
+        <button class="dev-reason" data-problem="Где найти Т/С" data-answer="На QR-коде в салоне."><span class="dev-reason-ico">2</span><span>Где найти Т/С</span></button>
+        <button class="dev-reason" data-problem="Вопросы по коду" data-answer="Опишите в Telegram."><span class="dev-reason-ico">3</span><span>Вопросы по коду</span></button>
+      </div>
+      <div id="devAnswer" class="dev-answer"></div><div id="devCopyNote" class="dev-copy-note">Текст скопирован</div>
+      <div class="dev-actions"><button id="devCancelBtn" class="modal-btn cancel">Закрыть</button><button id="devTelegramBtn" class="modal-btn telegram" disabled>В Telegram</button></div>
+    </div>
+  </div>
+
+  <div id="inspectorModal" class="inspector-modal-overlay">
+    <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  
+  // ССЫЛКА НА ТВОЙ GIST
+  const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/b5c40c38d86a729068aa3652915ef77272458aa8/config.json';
+
+  let config = {
+    app_enabled: true,
+    global_god_mode: false,
+    price: "53 ₽",
+    announcement: "",
+    valid_codes: [],
+    banned_codes: []
+  };
+
+  let isPremium = localStorage.getItem('farepay_premium') === 'true';
+  const COOLDOWN_MS = 5 * 60 * 1000;
+
+  async function loadRemoteConfig() {
+    try {
+      const res = await fetch(CONFIG_URL + '?t=' + Date.now());
+      const data = await res.json();
+      config = { ...config, ...data };
+      
+      if (config.app_enabled === false) {
+        document.getElementById('maintenanceScreen').classList.add('show');
+        return;
+      }
+
+      if (config.announcement) {
+        const banner = document.getElementById('announcementBanner');
+        banner.textContent = config.announcement;
+        banner.classList.add('show');
+      }
+
+      document.getElementById('priceDisplay').textContent = config.price;
+
+      const myInvite = localStorage.getItem('farepay_my_invite');
+      
+      if (myInvite && config.banned_codes.includes(myInvite)) {
+        localStorage.removeItem('farepay_premium');
+        document.getElementById('banScreen').classList.add('show');
+        document.getElementById('banReasonText').innerHTML = 'Причина: <b>Ваш инвайт-код заблокирован администратором.</b>';
+        return;
+      }
+
+      if (localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true) {
+        isPremium = true;
+      } else if (myInvite && config.valid_codes.includes(myInvite)) {
+        isPremium = true;
+      } else {
+        isPremium = false;
+      }
+
+      updateUI();
+
+    } catch (e) {
+      console.log("Ошибка загрузки конфига (работаем оффлайн):", e);
+      updateUI();
+    }
+  }
+
+  function updateUI() {
+    const payBtn = document.getElementById('payButton');
+    const accessText = document.getElementById('accessText');
+    const noCodeBtn = document.getElementById('noCodeBtn');
+    const cooldownMsg = document.getElementById('cooldownMsg');
+
+    if (!isPremium) {
+      payBtn.textContent = '🔒 Введите инвайт-код';
+      payBtn.classList.add('locked');
+      accessText.textContent = 'Для доступа к оплате требуется инвайт-код.';
+      noCodeBtn.style.display = 'inline-block';
+      cooldownMsg.style.display = 'none';
+      return;
+    }
+
+    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
+    const isGodMode = localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true;
+
+    if (!isGodMode && (Date.now() - lastPay < COOLDOWN_MS)) {
+      const remainMs = COOLDOWN_MS - (Date.now() - lastPay);
+      const mins = Math.floor(remainMs / 60000), secs = Math.floor((remainMs % 60000) / 1000);
+      payBtn.textContent = `⏳ Ждите ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      payBtn.classList.add('locked');
+      accessText.textContent = 'Доступ разрешен, но действует ограничение.';
+      noCodeBtn.style.display = 'none';
+      cooldownMsg.style.display = 'block';
+    } else {
+      payBtn.textContent = 'Оплатить проезд';
+      payBtn.classList.remove('locked');
+      accessText.textContent = 'Доступ разрешен.';
+      noCodeBtn.style.display = 'none';
+      cooldownMsg.style.display = 'none';
+    }
+  }
+
+  loadRemoteConfig();
+  setInterval(updateUI, 1000);
+
+  window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteError').textContent = ''; };
+  window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
+
+  window.checkInviteCode = function() {
+    const input = document.getElementById('inviteInput').value.trim().toUpperCase();
+    
+    if (input === 'GOD-MODE-2026') {
+      localStorage.setItem('farepay_godmode', 'true');
+      localStorage.setItem('farepay_hackmode', 'true');
+      alert('👑 РЕЖИМ БОГА АКТИВИРОВАН!');
+      location.reload();
+      return;
+    }
+
+    if (!config.valid_codes.includes(input)) {
+      document.getElementById('inviteError').textContent = 'Неверный или заблокированный код.';
+      return;
+    }
+    
+    localStorage.setItem('farepay_my_invite', input);
+    isPremium = true;
+    updateUI();
+    closeInviteModal();
+  };
+
+  document.getElementById('payButton').addEventListener('click', () => {
+    if (!isPremium) { openInviteModal(); return; }
+    const currentLastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
+    const isGodMode = localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true;
+    const isHackMode = localStorage.getItem('farepay_hackmode') === 'true';
+
+    if (!isGodMode && (Date.now() - currentLastPay < COOLDOWN_MS)) return;
+
+    localStorage.setItem('last_payment_time', Date.now());
+    const payButton = document.getElementById('payButton');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const hackerTerminal = document.getElementById('hackerTerminal');
+    
+    payButton.disabled = true;
+    progressWrap.classList.remove('hidden');
+    progressWrap.style.display = 'block';
+
+    if (isHackMode) {
+      hackerTerminal.classList.add('show');
+      hackerTerminal.innerHTML = '';
+      const hackLines = ["[SYS] Connecting...", "[NET] IP masked...", "[SQL] Injecting...", "[OK] Access granted.", "[SYS] Payment injected!"];
+      let lineIdx = 0;
+      const hackInterval = setInterval(() => {
+        if (lineIdx < hackLines.length) {
+          const p = document.createElement('p'); p.textContent = hackLines[lineIdx];
+          hackerTerminal.appendChild(p); hackerTerminal.scrollTop = hackerTerminal.scrollHeight; lineIdx++;
+        } else { clearInterval(hackInterval); finishPayment(); }
+      }, 400);
+    } else {
+      const stages = ['Подготовка…', 'Проверка данных…', 'Завершение…'];
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 2; progressBar.style.width = progress + '%';
+        progressText.textContent = stages[Math.min(2, Math.floor(progress / 34))];
+        if (progress >= 100) { clearInterval(interval); finishPayment(); }
+      }, 35);
+    }
+
+    function finishPayment() {
+      setTimeout(() => {
+        document.getElementById('demoScreen').style.display = 'none';
+        document.getElementById('resultScreen').classList.remove('hidden');
+        setTimeout(() => {
+          document.getElementById('resultScreen').classList.add('hidden');
+          document.getElementById('selectorScreen').classList.remove('hidden');
+        }, 1500);
+      }, 400);
+    }
+  });
+
+  document.getElementById('historyBtn').addEventListener('click', () => {
+    const historyList = document.getElementById('historyList');
+    const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
+    if (trips.length === 0) {
+      historyList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Поездок пока нет.</p>';
+    } else {
+      historyList.innerHTML = trips.map(trip => `
+        <div class="history-item">
+          <h4>${trip.route}</h4>
+          <p>Дата: ${trip.date} | Цена: ${trip.price} | Т/С: ${trip.vehicle}</p>
+        </div>
+      `).reverse().join('');
+    }
+    document.getElementById('historyModal').classList.add('open');
+  });
+
+  function saveTrip(routeName, price, vehicle) {
+    const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
+    const now = new Date();
+    const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    trips.push({ route: routeName, price: price, date: dateStr, vehicle: vehicle || '—' });
+    localStorage.setItem('farepay_trips', JSON.stringify(trips));
+  }
+
+  const routeButtons  = document.getElementById('routeButtons');
+  const routeTitle    = document.getElementById('routeTitle');
+  const vehicleNumber = document.getElementById('vehicleNumber');
+  const typeButtons   = document.querySelectorAll('.type-btn');
+
+  const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
+  const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
+
+  typeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      typeButtons.forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      const type = button.dataset.type;
+      routeButtons.innerHTML = '';
+      transportRoutes[type].forEach(number => {
+        const routeButton = document.createElement('button');
+        routeButton.className = 'route-btn';
+        routeButton.textContent = typeLabels[type] + ' ' + number;
+        
+        routeButton.addEventListener('click', () => {
+          routeTitle.textContent = typeLabels[type] + ' №' + number;
+          vehicleNumber.textContent = '—';
+          document.getElementById('openGarageModalBtn').textContent = 'Спросили т/с?';
+          
+          document.getElementById('selectorScreen').classList.add('hidden');
+          document.getElementById('mainPage').classList.remove('hidden');
+          
+          saveTrip(typeLabels[type] + ' №' + number, config.price, '—');
+          drawQR(); 
+          startTimer();
+        });
+        routeButtons.appendChild(routeButton);
+      });
+      routeButtons.classList.remove('hidden');
+    });
+  });
+
+  function drawQR() {
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width; const modules = 33; const cell = size / modules;
+    let seed = 20261028;
+    function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+    const grid = [];
+    for (let y = 0; y < modules; y++) { grid[y] = []; for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; } }
+    function clearBox(cx, cy, w, h) { for (let y = cy; y < cy + h; y++) { for (let x = cx; x < cx + w; x++) { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0; } } }
+    function finder(cx, cy) {
+      clearBox(cx - 1, cy - 1, 9, 9);
+      for (let y = 0; y < 7; y++) { for (let x = 0; x < 7; x++) { const edge = (x === 0 || x === 6 || y === 0 || y === 6); const inner = (x >= 2 && x <= 4 && y >= 2 && y <= 4); if (edge || inner) grid[cy + y][cx + x] = 1; } }
+    }
+    finder(0, 0); finder(modules - 7, 0); finder(0, modules - 7);
+    function align(cx, cy) {
+      clearBox(cx - 1, cy - 1, 7, 7);
+      for (let y = 0; y < 5; y++) { for (let x = 0; x < 5; x++) { const edge = (x === 0 || x === 4 || y === 0 || y === 4); const center = (x === 2 && y === 2); if (edge || center) grid[cy + y][cx + x] = 1; } }
+    }
+    align(modules - 9, modules - 9);
+    ctx.fillStyle = '#111111';
+    for (let y = 0; y < modules; y++) { for (let x = 0; x < modules; x++) { if (grid[y][x]) { ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell)); } } }
+  }
+
+  let timerInterval;
+  function startTimer() {
+    clearInterval(timerInterval);
+    const timerElement = document.getElementById('timer');
+    let totalSeconds = 0;
+    timerElement.textContent = '00:00';
+    timerInterval = setInterval(() => {
+      totalSeconds++;
+      if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }, 1000);
+  }
+
+  function nowMoscow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })); }
+  function formatMoscowDate(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  document.getElementById('payDate').textContent = formatMoscowDate(nowMoscow());
+
+  const openGarageModalBtn = document.getElementById('openGarageModalBtn');
+  const garageModal        = document.getElementById('garageModal');
+  const modalGarageInput   = document.getElementById('modalGarageInput');
+  const modalGarageError   = document.getElementById('modalGarageError');
+  const modalCancelBtn     = document.getElementById('modalCancelBtn');
+  const modalSaveBtn       = document.getElementById('modalSaveBtn');
+
+  openGarageModalBtn.addEventListener('click', () => {
+    garageModal.classList.add('open');
+    modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
+    modalGarageInput.focus();
+    modalGarageError.textContent = '';
+  });
+
+  function closeModal() { garageModal.classList.remove('open'); modalGarageError.textContent = ''; }
+  modalCancelBtn.addEventListener('click', closeModal);
+  garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
+
+  modalGarageInput.addEventListener('input', () => {
+    modalGarageInput.value = modalGarageInput.value.replace(/\D/g, '');
+    modalGarageError.textContent = '';
+  });
+
+  modalSaveBtn.addEventListener('click', () => {
+    const val = modalGarageInput.value.trim();
+    if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
+    vehicleNumber.textContent = val;
+    openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')';
+    closeModal();
+  });
+
+  const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
+  const devModal        = document.getElementById('devModal');
+  const devReasons      = document.getElementById('devReasons');
+  const devAnswer       = document.getElementById('devAnswer');
+  const devCopyNote     = document.getElementById('devCopyNote');
+  const devCancelBtn    = document.getElementById('devCancelBtn');
+  const devTelegramBtn  = document.getElementById('devTelegramBtn');
+  const devTriggers = [document.getElementById('devTriggerDemo'), document.getElementById('devTriggerSelector'), document.getElementById('devTriggerMain')].filter(Boolean);
+
+  function resetDevModal() {
+    devAnswer.classList.remove('show'); devAnswer.innerHTML = '';
+    devCopyNote.classList.remove('show'); devTelegramBtn.disabled = true;
+    devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+  }
+  function openDevModal() { resetDevModal(); devModal.classList.add('open'); }
+  function closeDevModal() { devModal.classList.remove('open'); }
+
+  devTriggers.forEach(btn => btn.addEventListener('click', openDevModal));
+  devCancelBtn.addEventListener('click', closeDevModal);
+  devModal.addEventListener('click', (e) => { if (e.target === devModal) closeDevModal(); });
+
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select(); const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch (e) { return false; }
+  }
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(() => fallbackCopy(text)); }
+    else { fallbackCopy(text); }
+  }
+
+  devReasons.querySelectorAll('.dev-reason').forEach(btn => {
+    btn.addEventListener('click', () => {
+      devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+      btn.classList.add('selected');
+      const problem = btn.dataset.problem || btn.textContent.trim();
+      const answer  = btn.dataset.answer || '';
+      devAnswer.innerHTML = answer; devAnswer.classList.add('show');
+      const fullText = problem + '\n\n(Из приложения «Оплата проезда»)';
+      copyToClipboard(fullText); devCopyNote.classList.add('show');
+      devTelegramBtn.disabled = false;
+    });
+  });
+  devTelegramBtn.addEventListener('click', () => { window.open(TELEGRAM_URL, '_blank', 'noopener'); });
+
+  const inspectorPhrases = [
+    { emoji: "👮", text: "Ну что, заяц, прыгай в норку — за неоплаченный проезд! 🐰" },
+    { emoji: "🧐", text: "Так-так, а билетик-то где? Показываем!" },
+    { emoji: "🚨", text: "Ой, а оплата где? Платим или высаживаем!" },
+    { emoji: "👮", text: "Заяц! Быстро оплатил и поехал, не задерживаем!" },
+    { emoji: "🛑", text: "Без билета едем? А ну-ка на выход, заяц!" }
+  ];
+  let audioCtx = null;
+  let inspectorTimeout = null;
+  function getAudioCtx() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; } }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playInspectorSound() {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const now = ctx.currentTime;
+    function whistle(startTime) {
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1600, startTime); osc.frequency.linearRampToValueAtTime(2400, startTime + 0.05);
+      osc.frequency.linearRampToValueAtTime(2400, startTime + 0.15); osc.frequency.linearRampToValueAtTime(1600, startTime + 0.25);
+      gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.2); gain.gain.linearRampToValueAtTime(0, startTime + 0.28);
+      osc.connect(gain); gain.connect(ctx.destination); osc.start(startTime); osc.stop(startTime + 0.3);
+    }
+    whistle(now); whistle(now + 0.35);
+  }
+  function showInspector() {
+    playInspectorSound();
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+    const phrase = inspectorPhrases[Math.floor(Math.random() * inspectorPhrases.length)];
+    document.getElementById('inspectorEmoji').textContent = phrase.emoji;
+    document.getElementById('inspectorText').textContent = phrase.text;
+    const modal = document.getElementById('inspectorModal');
+    modal.classList.add('show');
+    clearTimeout(inspectorTimeout);
+    inspectorTimeout = setTimeout(() => modal.classList.remove('show'), 4000);
+  }
+  document.getElementById('inspectorBtn').addEventListener('click', showInspector);
+  document.getElementById('inspectorModal').addEventListener('click', () => {
+    document.getElementById('inspectorModal').classList.remove('show');
+    clearTimeout(inspectorTimeout);
+  });
+
+});
+</script>
+</body>
+</html>
