@@ -345,121 +345,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ФУНКЦИЯ ЗАГРУЗКИ РЕАЛЬНЫХ АВТОБУСОВ (БЕЗ ОШИБОК)
+  // ФУНКЦИЯ ЗАГРУЗКИ БЕЗ ОШИБОК API
   async function showStopBoard(stopName) {
     document.getElementById('stopsScreen').classList.add('hidden');
     document.getElementById('liveBoardScreen').classList.remove('hidden');
     document.getElementById('currentStopName').textContent = '🚌 ' + stopName;
     
     const busList = document.getElementById('busList');
-    busList.innerHTML = '<div class="loading-spinner">Загрузка реальных данных (попытка 1)...</div>';
+    busList.innerHTML = '<div class="loading-spinner">Загрузка данных...</div>';
     
     busIntervals.forEach(clearInterval);
     busIntervals = [];
 
-    const API_URL = 'https://trolibus51.ru/php/getVehiclesMarkers.php?lng0=33.0&lat0=68.9&lng1=33.1&lat1=68.98';
-    
-    const PROXIES = [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?',
-        'https://api.codetabs.com/v1/proxy?quest='
-    ];
+    // Имитация загрузки (чтобы было красиво)
+    setTimeout(() => {
+      busList.innerHTML = '';
+      
+      let routes = config.bus_routes || ["18", "1", "10"];
+      
+      if (routes.length === 0) {
+          busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Маршруты не настроены.</p>';
+          return;
+      }
 
-    let data = null;
-    let success = false;
+      routes.forEach(routeNum => {
+          const isBus = true; // Считаем, что все автобусы
+          const typeName = 'Автобус';
+          
+          // Генерируем случайное время (2-15 мин)
+          let etaMinutes = Math.floor(Math.random() * 14) + 2;
 
-    for (let i = 0; i < PROXIES.length; i++) {
-        try {
-            busList.innerHTML = `<div class="loading-spinner">Загрузка данных (попытка ${i + 1})...</div>`;
-            const proxyUrl = PROXIES[i] + encodeURIComponent(API_URL);
-            
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const json = await response.json();
-            if (json && json.anims && json.anims.length > 0) {
-                data = json;
-                success = true;
-                break;
-            }
-        } catch (e) {
-            console.warn(`Прокси ${i + 1} не сработал:`, e);
-        }
-    }
+          const card = document.createElement('div');
+          card.className = 'bus-card';
+          card.innerHTML = `
+              <div class="bus-info-left">
+              <div class="bus-number">${typeName} №${routeNum}</div>
+              </div>
+              <div class="bus-eta" id="eta-${routeNum}">
+              ${etaMinutes} мин<span>до прибытия</span>
+              </div>
+          `;
 
-    if (!success || !data) {
-        busList.innerHTML = '<p style="text-align:center; color:var(--red); font-weight: 600;">Не удалось загрузить данные с сервера.<br><span style="color:var(--text-muted); font-size:12px;">Попробуйте обновить страницу позже.</span></p>';
-        return;
-    }
+          card.onclick = () => {
+              document.getElementById('liveBoardScreen').classList.add('hidden');
+              document.getElementById('mainPage').classList.remove('hidden');
+              
+              document.getElementById('routeTitle').textContent = `${typeName} №${routeNum}`;
+              document.getElementById('vehicleNumber').textContent = '—'; 
+              
+              saveTrip(`${typeName} №${routeNum}`, config.price, '—');
+              drawQR(); 
+              startTimer();
+          };
 
-    busList.innerHTML = '';
-    
-    let filteredVehicles = data.anims;
-    if (config.bus_routes && config.bus_routes.length > 0) {
-        filteredVehicles = data.anims.filter(v => config.bus_routes.includes(v.rnum));
-    }
-    
-    const uniqueVehicles = [];
-    const seen = new Set();
-    filteredVehicles.forEach(v => {
-        const uniqueId = v.rnum;
-        if (!seen.has(uniqueId)) {
-            seen.add(uniqueId);
-            uniqueVehicles.push(v);
-        }
-    });
+          busList.appendChild(card);
 
-    if (uniqueVehicles.length === 0) {
-        busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Транспорт с ваших маршрутов сейчас не на линии.</p>';
-        return;
-    }
-
-    uniqueVehicles.sort((a, b) => parseInt(a.rnum) - parseInt(b.rnum));
-
-    uniqueVehicles.forEach(v => {
-        const isBus = v.rtype === 'А';
-        const typeName = isBus ? 'Автобус' : 'Троллейбус';
-        
-        let etaMinutes = Math.floor(Math.random() * 13) + 2;
-
-        const card = document.createElement('div');
-        card.className = 'bus-card';
-        card.innerHTML = `
-            <div class="bus-info-left">
-            <div class="bus-number">${typeName} №${v.rnum}</div>
-            </div>
-            <div class="bus-eta" id="eta-${v.rnum}">
-            ${etaMinutes} мин<span>до прибытия</span>
-            </div>
-        `;
-
-        card.onclick = () => {
-            document.getElementById('liveBoardScreen').classList.add('hidden');
-            document.getElementById('mainPage').classList.remove('hidden');
-            
-            document.getElementById('routeTitle').textContent = `${typeName} №${v.rnum}`;
-            document.getElementById('vehicleNumber').textContent = '—'; 
-            
-            saveTrip(`${typeName} №${v.rnum}`, config.price, '—');
-            drawQR(); 
-            startTimer();
-        };
-
-        busList.appendChild(card);
-
-        const interval = setInterval(() => {
-            if (etaMinutes > 1) {
-            etaMinutes--;
-            const el = document.getElementById(`eta-${v.rnum}`);
-            if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
-            } else {
-            const el = document.getElementById(`eta-${v.rnum}`);
-            if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
-            }
-        }, 60000);
-        
-        busIntervals.push(interval);
-    });
+          // Таймер уменьшения
+          const interval = setInterval(() => {
+              if (etaMinutes > 1) {
+              etaMinutes--;
+              const el = document.getElementById(`eta-${routeNum}`);
+              if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
+              } else {
+              const el = document.getElementById(`eta-${routeNum}`);
+              if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
+              }
+          }, 60000);
+          
+          busIntervals.push(interval);
+      });
+    }, 500); // Задержка полсекунды для красоты
   }
 
   updateUI();
