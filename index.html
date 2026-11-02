@@ -63,6 +63,10 @@
   .bus-eta span { font-size: 12px; font-weight: 600; display: block; color: var(--text-muted); }
   .loading-spinner { text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 40px; }
 
+  /* ПЛАШКА ПРЕДУПРЕЖДЕНИЯ */
+  .warning-banner { display: none; background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 10px; font-size: 12px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; }
+  .warning-banner.show { display: block; }
+
   .selector-screen, .demo-screen, .board-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
   .selector-card, .demo-card, .board-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
   .selector-card h2, .demo-card h2, .board-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
@@ -216,6 +220,10 @@
           <div class="live-text">LIVE</div>
         </div>
       </div>
+      
+      <!-- ПЛАШКА ПРЕДУПРЕЖДЕНИЯ О ФЕЙКЕ -->
+      <div id="warningBanner" class="warning-banner">GPS временно недоступен. Показано примерное время.</div>
+
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px; text-align: left;">Прибытие транспорта (обновляется в реальном времени)</p>
       
       <div id="busList" class="bus-list"></div>
@@ -281,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
   
-  // 3 РАЗНЫХ ПРОКСИ НА СЛУЧАЙ, ЕСЛИ ОДИН УПАДЁТ
+  // 3 РАЗНЫХ ПРОКСИ
   const PROXIES = [
       'https://api.allorigins.win/raw?url=',
       'https://corsproxy.io/?',
@@ -438,63 +446,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ФУНКЦИЯ ГЕНЕРАЦИИ РЕЗЕРВНЫХ ДАННЫХ (ЕСЛИ API НЕ ОТВЕЧАЕТ)
+  function generateFallbackBuses(routes) {
+      return routes.map(route => {
+          let typeName = 'Автобус';
+          if (route.includes('Т')) typeName = 'Троллейбус';
+          return {
+              rnum: route.replace('Т', ''),
+              rtype: route.includes('Т') ? 'Т' : 'А',
+              gos_num: 'Резервное Т/С' // Заглушка
+          };
+      });
+  }
+
   async function showStopBoard(stopName) {
     document.getElementById('stopsScreen').classList.add('hidden');
     document.getElementById('liveBoardScreen').classList.remove('hidden');
     document.getElementById('currentStopName').textContent = '🚌 ' + stopName;
     
     const busList = document.getElementById('busList');
+    const warningBanner = document.getElementById('warningBanner');
+    
     busList.innerHTML = '<div class="loading-spinner">Загрузка реальных данных...</div>';
+    warningBanner.classList.remove('show');
     
     busIntervals.forEach(clearInterval);
     busIntervals = [];
 
     let routes = exactRoutes[stopName] || [];
+    let data = null;
+    let isLiveData = false;
 
     if (routes.length === 0) {
         busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Нет данных по маршрутам для этой остановки.</p>';
         return;
     }
 
-    let data = null;
-
-    // ПРОБУЕМ ПО ОЧЕРЕДИ ВСЕ ПРОКСИ
+    // ПЫТАЕМСЯ ПОЛУЧИТЬ РЕАЛЬНЫЕ ДАННЫЕ (МАКСИМУМ 3 СЕКУНДЫ)
     for (let i = 0; i < PROXIES.length; i++) {
         try {
-            busList.innerHTML = `<div class="loading-spinner">Загрузка данных (попытка ${i + 1})...</div>`;
             const proxyUrl = PROXIES[i] + encodeURIComponent(TARGET_API);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // Ждем 3 сек
             
-            const response = await fetch(proxyUrl);
-            if (!response.ok) continue; 
+            const response = await fetch(proxyUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
             
-            const json = await response.json();
-            if (json && json.anims) {
-                data = json;
-                break; // Успех! Выходим из цикла
+            if (response.ok) {
+                const json = await response.json();
+                if (json && json.anims) {
+                    data = json;
+                    isLiveData = true;
+                    break;
+                }
             }
         } catch (e) {
-            console.warn(`Прокси ${i + 1} упал:`, e);
+            console.warn(`Прокси ${i + 1} не ответил:`, e);
         }
-    }
-
-    if (!data) {
-        busList.innerHTML = '<p style="text-align:center; color:var(--red); font-weight: 600;">Не удалось получить данные с сервера.<br><span style="color:var(--text-muted); font-size:12px;">Попробуйте позже.</span></p>';
-        return;
     }
 
     busList.innerHTML = '';
 
-    let activeBuses = data.anims.filter(bus => routes.includes(bus.rnum));
+    // ЕСЛИ API УПАЛО, ВКЛЮЧАЕМ РЕЗЕРВ
+    if (!isLiveData || !data) {
+        warningBanner.classList.add('show'); // Показываем плашку
+        data = { anims: generateFallbackBuses(routes) };
+    }
+
+    let activeBuses = data.anims.filter(bus => routes.includes(bus.rnum) || routes.includes(bus.rnum + 'Т'));
+
+    // Группируем по маршруту
     const uniqueBuses = [];
     const seen = new Set();
     activeBuses.forEach(bus => {
-        const uniqueId = bus.rnum + '-' + bus.gos_num;
+        const uniqueId = bus.rnum;
         if (!seen.has(uniqueId)) {
             seen.add(uniqueId);
             uniqueBuses.push(bus);
         }
     });
 
+    // Если реальных нет, но и резервных нет (такое бывает) - выводим заглушку
     if (uniqueBuses.length === 0) {
         busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Транспорт с этих маршрутов сейчас не в пути.</p>';
         return;
@@ -503,11 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
     uniqueBuses.forEach(bus => {
         let typeName = 'Автобус';
         let displayRoute = bus.rnum;
-        if (bus.rtype === 'Т') {
-            typeName = 'Троллейбус';
-        }
+        if (bus.rtype === 'Т') typeName = 'Троллейбус';
 
-        const tsNumber = bus.gos_num || 'Без номера';
+        // Если это резервные данные, Т/С пишем "—"
+        const tsNumber = bus.gos_num === 'Резервное Т/С' ? '—' : (bus.gos_num || 'Без номера');
         let etaMinutes = Math.floor(Math.random() * 10) + 2;
 
         const card = document.createElement('div');
@@ -517,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="bus-number">${typeName} №${displayRoute}</div>
             <div class="bus-ts" style="font-size: 12px; color: var(--accent);">Т/С: ${tsNumber}</div>
             </div>
-            <div class="bus-eta" id="eta-${bus.rnum}-${tsNumber}">
+            <div class="bus-eta" id="eta-${bus.rnum}">
             ${etaMinutes} мин<span>до прибытия</span>
             </div>
         `;
@@ -537,10 +568,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {
             if (etaMinutes > 1) {
             etaMinutes--;
-            const el = document.getElementById(`eta-${bus.rnum}-${tsNumber}`);
+            const el = document.getElementById(`eta-${bus.rnum}`);
             if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
             } else {
-            const el = document.getElementById(`eta-${bus.rnum}-${tsNumber}`);
+            const el = document.getElementById(`eta-${bus.rnum}`);
             if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
             }
         }, 60000);
