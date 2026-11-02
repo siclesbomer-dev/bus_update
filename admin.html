@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel | FarePay</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  body { background: #0a0a0c; color: #fff; font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; }
+  .admin-card { background: #141416; border: 1px solid #2a2a2e; padding: 30px; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  h2 { color: #ff6b00; margin-top: 0; text-align: center; }
+  .section { background: #1f1f22; border: 1px solid #2a2a2e; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+  .section h3 { margin-top: 0; font-size: 16px; color: #fff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+  .flex { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+  input[type="text"] { flex: 1; min-width: 200px; background: #0a0a0c; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 10px; outline: none; font-size: 15px; }
+  input[type="text"]:focus { border-color: #ff6b00; }
+  button { background: #ff6b00; color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  button:hover { background: #e65c00; }
+  .btn-danger { background: #ff3333; } .btn-danger:hover { background: #cc0000; }
+  .btn-green { background: #00ff66; color: #000; } .btn-green:hover { background: #00cc55; }
+  .list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+  .list-item { background: #0a0a0c; border: 1px solid #333; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; color: #00ff66; font-size: 14px; }
+  .list-item button { padding: 6px 12px; font-size: 12px; background: #ff3333; }
+  .switch-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  input[type="checkbox"] { width: 24px; height: 24px; accent-color: #ff6b00; cursor: pointer; }
+  textarea { width: 100%; height: 180px; background: #000; color: #00ff66; border: 1px solid #00ff66; border-radius: 12px; padding: 15px; font-family: monospace; font-size: 14px; margin-top: 15px; outline: none; resize: vertical; }
+  .copy-btn { width: 100%; background: #00ff66; color: #000; font-size: 16px; margin-top: 10px; padding: 15px; }
+</style>
+</head>
+<body>
+  <div class="admin-card">
+    <h2>⚙️ Панель Управления FarePay</h2>
+    
+    <!-- ТЕКУЩИЕ НАСТРОЙКИ -->
+    <div class="section">
+      <h3>🌐 Глобальные настройки</h3>
+      <div class="flex">
+        <input type="text" id="price" placeholder="Цена (например: 53 ₽)" value="53 ₽">
+        <input type="text" id="announcement" placeholder="Объявление (пусто = выкл)" value="">
+      </div>
+      <div class="switch-group">
+        <span>Включить приложение (Kill Switch)</span>
+        <input type="checkbox" id="appEnabled" checked>
+      </div>
+      <div class="switch-group">
+        <span>Глобальный God Mode (для всех)</span>
+        <input type="checkbox" id="globalGodMode">
+      </div>
+    </div>
+
+    <!-- УПРАВЛЕНИЕ КОДАМИ -->
+    <div class="section">
+      <h3>🎟️ Инвайт-коды (Белый список)</h3>
+      <div class="flex">
+        <input type="text" id="newCode" placeholder="FARE-XXXX-XXXX">
+        <button onclick="addCode()">➕ Добавить</button>
+      </div>
+      <div id="validList" class="list"></div>
+    </div>
+
+    <!-- БАН-ЛИСТ -->
+    <div class="section">
+      <h3>🚫 Забаненные коды (Черный список)</h3>
+      <div class="flex">
+        <input type="text" id="banCode" placeholder="FARE-XXXX-XXXX">
+        <button class="btn-danger" onclick="banCode()">⛔ Забанить</button>
+      </div>
+      <div id="bannedList" class="list"></div>
+    </div>
+
+    <!-- ГЕНЕРАТОР КОДА -->
+    <div class="section">
+      <h3>💾 Сохранение в GitHub</h3>
+      <p style="font-size: 13px; color: #8b8b93; line-height: 1.5;">Нажми кнопку, скопируй получившийся текст и вставь его в свой секретный Gist (config.json) вместо старого.</p>
+      <textarea id="output" readonly></textarea>
+      <button class="copy-btn" onclick="copyOutput()">📋 Скопировать готовый JSON</button>
+    </div>
+  </div>
+
+<script>
+  // Дефолтные данные (совпадают с твоим Gist)
+  let config = {
+    app_enabled: true,
+    global_god_mode: false,
+    price: "53 ₽",
+    announcement: "",
+    valid_codes: ["FARE-8OKF-N8NB", "FARE-8FMJ-S4R9"],
+    banned_codes: ["FARE-BADCODE-111"]
+  };
+
+  function render() {
+    const vList = document.getElementById('validList');
+    vList.innerHTML = '';
+    config.valid_codes.forEach((code, index) => {
+      vList.innerHTML += `<div class="list-item"><span>${code}</span><button onclick="removeCode(${index})">Удалить</button></div>`;
+    });
+
+    const bList = document.getElementById('bannedList');
+    bList.innerHTML = '';
+    config.banned_codes.forEach((code, index) => {
+      bList.innerHTML += `<div class="list-item" style="color:#ff3333; border-color:#ff3333;"><span>${code}</span><button onclick="unbanCode(${index})">Разбан</button></div>`;
+    });
+
+    config.price = document.getElementById('price').value;
+    config.announcement = document.getElementById('announcement').value;
+    config.app_enabled = document.getElementById('appEnabled').checked;
+    config.global_god_mode = document.getElementById('globalGodMode').checked;
+    
+    document.getElementById('output').value = JSON.stringify(config, null, 2);
+  }
+
+  function addCode() {
+    const val = document.getElementById('newCode').value.trim().toUpperCase();
+    if (val && !config.valid_codes.includes(val)) {
+      config.valid_codes.push(val);
+      document.getElementById('newCode').value = '';
+      render();
+    }
+  }
+
+  function removeCode(index) {
+    config.valid_codes.splice(index, 1);
+    render();
+  }
+
+  function banCode() {
+    const val = document.getElementById('banCode').value.trim().toUpperCase();
+    if (val && !config.banned_codes.includes(val)) {
+      config.banned_codes.push(val);
+      config.valid_codes = config.valid_codes.filter(c => c !== val);
+      document.getElementById('banCode').value = '';
+      render();
+    }
+  }
+
+  function unbanCode(index) {
+    config.banned_codes.splice(index, 1);
+    render();
+  }
+
+  function copyOutput() {
+    const ta = document.getElementById('output');
+    ta.select();
+    document.execCommand('copy');
+    alert('✅ JSON скопирован! Вставь его в свой Gist.');
+  }
+
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', render);
+    input.addEventListener('change', render);
+  });
+
+  render();
+</script>
+</body>
+</html>
