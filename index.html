@@ -218,9 +218,7 @@
       </div>
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px; text-align: left;">Прибытие транспорта (обновляется в реальном времени)</p>
       
-      <div id="busList" class="bus-list">
-        <div class="loading-spinner">Загрузка реальных данных...</div>
-      </div>
+      <div id="busList" class="bus-list"></div>
 
       <div style="margin-top: 30px; text-align: center;">
         <button class="garage-link" onclick="document.getElementById('liveBoardScreen').classList.add('hidden'); document.getElementById('stopsScreen').classList.remove('hidden');">← К остановкам</button>
@@ -345,19 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ФУНКЦИЯ ЗАГРУЗКИ БЕЗ ОШИБОК API
-  async function showStopBoard(stopName) {
+  // ФУНКЦИЯ ГЕНЕРАЦИИ ТАБЛО (БЕЗ API)
+  function showStopBoard(stopName) {
     document.getElementById('stopsScreen').classList.add('hidden');
     document.getElementById('liveBoardScreen').classList.remove('hidden');
     document.getElementById('currentStopName').textContent = '🚌 ' + stopName;
     
     const busList = document.getElementById('busList');
-    busList.innerHTML = '<div class="loading-spinner">Загрузка данных...</div>';
+    busList.innerHTML = '<div class="loading-spinner">Загрузка...</div>';
     
     busIntervals.forEach(clearInterval);
     busIntervals = [];
 
-    // Имитация загрузки (чтобы было красиво)
     setTimeout(() => {
       busList.innerHTML = '';
       
@@ -369,11 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       routes.forEach(routeNum => {
-          const isBus = true; // Считаем, что все автобусы
           const typeName = 'Автобус';
-          
-          // Генерируем случайное время (2-15 мин)
-          let etaMinutes = Math.floor(Math.random() * 14) + 2;
+          let etaMinutes = Math.floor(Math.random() * 14) + 2; // От 2 до 15 минут
 
           const card = document.createElement('div');
           card.className = 'bus-card';
@@ -400,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
           busList.appendChild(card);
 
-          // Таймер уменьшения
           const interval = setInterval(() => {
               if (etaMinutes > 1) {
               etaMinutes--;
@@ -414,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           busIntervals.push(interval);
       });
-    }, 500); // Задержка полсекунды для красоты
+    }, 300); // Небольшая задержка для плавности
   }
 
   updateUI();
