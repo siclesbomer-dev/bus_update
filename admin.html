@@ -3,154 +3,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel | FarePay</title>
+<title>👑 MEGA Admin Panel | FarePay</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  body { background: #0a0a0c; color: #fff; font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; }
-  .admin-card { background: #141416; border: 1px solid #2a2a2e; padding: 30px; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-  h2 { color: #ff6b00; margin-top: 0; text-align: center; }
-  .section { background: #1f1f22; border: 1px solid #2a2a2e; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-  .section h3 { margin-top: 0; font-size: 16px; color: #fff; border-bottom: 1px solid #333; padding-bottom: 10px; }
-  .flex { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-  input[type="text"] { flex: 1; min-width: 200px; background: #0a0a0c; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 10px; outline: none; font-size: 15px; }
-  input[type="text"]:focus { border-color: #ff6b00; }
-  button { background: #ff6b00; color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-  button:hover { background: #e65c00; }
-  .btn-danger { background: #ff3333; } .btn-danger:hover { background: #cc0000; }
-  .btn-green { background: #00ff66; color: #000; } .btn-green:hover { background: #00cc55; }
-  .list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .list-item { background: #0a0a0c; border: 1px solid #333; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; color: #00ff66; font-size: 14px; }
-  .list-item button { padding: 6px 12px; font-size: 12px; background: #ff3333; }
-  .switch-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  input[type="checkbox"] { width: 24px; height: 24px; accent-color: #ff6b00; cursor: pointer; }
-  textarea { width: 100%; height: 180px; background: #000; color: #00ff66; border: 1px solid #00ff66; border-radius: 12px; padding: 15px; font-family: monospace; font-size: 14px; margin-top: 15px; outline: none; resize: vertical; }
-  .copy-btn { width: 100%; background: #00ff66; color: #000; font-size: 16px; margin-top: 10px; padding: 15px; }
+  :root { --bg: #0a0a0c; --card: #141416; --accent: #ff6b00; --text: #fff; --muted: #8b8b93; --border: #2a2a2e; --green: #00ff66; --red: #ff3333; }
+  * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+  .admin-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 20px; }
+  
+  /* Навигация */
+  .tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+  .tab-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 107, 0, 0.4); }
+  
+  /* Контент */
+  .tab-content { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  h2 { color: var(--accent); margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; }
+  h3 { font-size: 16px; color: #ccc; margin-bottom: 12px; }
+  
+  /* Формы */
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input[type="text"], input[type="number"], textarea, select { width: 100%; background: var(--bg); color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 10px; outline: none; font-size: 15px; transition: 0.2s; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  
+  /* Кнопки */
+  .btn { background: var(--accent); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+  .btn:hover { background: #e65c00; transform: translateY(-1px); }
+  .btn-green { background: var(--green); color: #000; } .btn-green:hover { background: #00cc55; }
+  .btn-red { background: var(--red); } .btn-red:hover { background: #cc0000; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Списки */
+  .list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+  .list-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 14px; }
+  .list-item .actions { display: flex; gap: 5px; }
+  .list-item .actions button { padding: 6px 10px; font-size: 12px; border-radius: 6px; }
+  
+  /* Переключатели */
+  .switch-group { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+  .switch-group span { font-weight: 600; font-size: 14px; }
+  .switch-group small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 4px; }
+  input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
+  
+  /* Генератор */
+  .output-box { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 20px; }
+  textarea.code-output { height: 200px; background: #000; color: var(--green); font-family: monospace; font-size: 13px; border: 1px solid var(--green); }
 </style>
 </head>
 <body>
-  <div class="admin-card">
-    <h2>⚙️ Панель Управления FarePay</h2>
+<div class="admin-container">
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('codes')">🎟️ Коды и Баны</button>
+    <button class="tab-btn" onclick="switchTab('config')">⚙️ Настройки</button>
+    <button class="tab-btn" onclick="switchTab('content')">📝 Контент</button>
+    <button class="tab-btn" onclick="switchTab('visual')">🎨 Визуал</button>
+  </div>
+
+  <!-- ВКЛАДКА 1: КОДЫ -->
+  <div id="tab-codes" class="tab-content active">
+    <h2>Управление доступом</h2>
     
-    <!-- ТЕКУЩИЕ НАСТРОЙКИ -->
-    <div class="section">
-      <h3>🌐 Глобальные настройки</h3>
-      <div class="flex">
-        <input type="text" id="price" placeholder="Цена (например: 53 ₽)" value="53 ₽">
-        <input type="text" id="announcement" placeholder="Объявление (пусто = выкл)" value="">
-      </div>
-      <div class="switch-group">
-        <span>Включить приложение (Kill Switch)</span>
-        <input type="checkbox" id="appEnabled" checked>
-      </div>
-      <div class="switch-group">
-        <span>Глобальный God Mode (для всех)</span>
-        <input type="checkbox" id="globalGodMode">
-      </div>
+    <h3>🎟️ Действующие инвайты</h3>
+    <div class="form-group" style="display:flex; gap:10px;">
+      <input type="text" id="newCode" placeholder="FARE-XXXX-XXXX">
+      <button class="btn" onclick="addCode()">Добавить</button>
+      <button class="btn btn-green" onclick="generateCodes()">Сгенерировать 10</button>
+    </div>
+    <div id="validList" class="list"></div>
+
+    <h3 style="margin-top:30px;">🚫 Бан-лист (Черный список)</h3>
+    <div class="form-group" style="display:flex; gap:10px;">
+      <input type="text" id="banCode" placeholder="FARE-XXXX-XXXX">
+      <button class="btn btn-red" onclick="banCode()">Забанить</button>
+    </div>
+    <div id="bannedList" class="list"></div>
+  </div>
+
+  <!-- ВКЛАДКА 2: НАСТРОЙКИ -->
+  <div id="tab-config" class="tab-content">
+    <h2>Глобальные настройки</h2>
+    
+    <div class="switch-group">
+      <div><span>Kill Switch (Тех. работы)</span><small>Полностью отключает приложение</small></div>
+      <input type="checkbox" id="appEnabled" onchange="updateJson()">
+    </div>
+    <div class="switch-group">
+      <div><span>Глобальный God Mode</span><small>Отключает кулдаун у всех пользователей</small></div>
+      <input type="checkbox" id="globalGodMode" onchange="updateJson()">
+    </div>
+    <div class="switch-group">
+      <div><span>Режим Снега (Particles)</span><small>Добавит падающий снег на фон</small></div>
+      <input type="checkbox" id="snowMode" onchange="updateJson()">
     </div>
 
-    <!-- УПРАВЛЕНИЕ КОДАМИ -->
-    <div class="section">
-      <h3>🎟️ Инвайт-коды (Белый список)</h3>
-      <div class="flex">
-        <input type="text" id="newCode" placeholder="FARE-XXXX-XXXX">
-        <button onclick="addCode()">➕ Добавить</button>
-      </div>
-      <div id="validList" class="list"></div>
+    <h3 style="margin-top:20px;">📢 Объявление на главном экране</h3>
+    <div class="form-group">
+      <input type="text" id="announcement" placeholder="Текст объявления (пусто = выкл)" oninput="updateJson()">
     </div>
 
-    <!-- БАН-ЛИСТ -->
-    <div class="section">
-      <h3>🚫 Забаненные коды (Черный список)</h3>
-      <div class="flex">
-        <input type="text" id="banCode" placeholder="FARE-XXXX-XXXX">
-        <button class="btn-danger" onclick="banCode()">⛔ Забанить</button>
-      </div>
-      <div id="bannedList" class="list"></div>
+    <h3>💰 Цена проезда</h3>
+    <div class="form-group">
+      <input type="text" id="price" placeholder="Например: 53 ₽" value="53 ₽" oninput="updateJson()">
     </div>
-
-    <!-- ГЕНЕРАТОР КОДА -->
-    <div class="section">
-      <h3>💾 Сохранение в GitHub</h3>
-      <p style="font-size: 13px; color: #8b8b93; line-height: 1.5;">Нажми кнопку, скопируй получившийся текст и вставь его в свой секретный Gist (config.json) вместо старого.</p>
-      <textarea id="output" readonly></textarea>
-      <button class="copy-btn" onclick="copyOutput()">📋 Скопировать готовый JSON</button>
+    
+    <h3>💬 Кастомный текст ошибки</h3>
+    <div class="form-group">
+      <input type="text" id="errorText" placeholder="Неверный код" oninput="updateJson()">
     </div>
   </div>
 
+  <!-- ВКЛАДКА 3: КОНТЕНТ -->
+  <div id="tab-content" class="tab-content">
+    <h2>Текстовый контент</h2>
+    
+    <h3>🎭 Фразы Контролёра</h3>
+    <div class="form-group" style="display:flex; gap:10px;">
+      <input type="text" id="newPhrase" placeholder="Текст новой фразы...">
+      <button class="btn" onclick="addPhrase()">Добавить</button>
+    </div>
+    <div id="phrasesList" class="list"></div>
+
+    <h3 style="margin-top:20px;">🚌 Маршруты (Автобусы)</h3>
+    <div class="form-group" style="display:flex; gap:10px;">
+      <input type="text" id="newBus" placeholder="Номер (например: 99)">
+      <button class="btn" onclick="addBus()">Добавить</button>
+    </div>
+    <div id="busList" class="list"></div>
+  </div>
+
+  <!-- ВКЛАДКА 4: ВИЗУАЛ -->
+  <div id="tab-visual" class="tab-content">
+    <h2>Настройки дизайна</h2>
+    
+    <h3>🖼️ Иконка приложения (Favicon)</h3>
+    <div class="form-group">
+      <input type="text" id="faviconUrl" placeholder="Ссылка на картинку (URL)" oninput="updateJson()">
+    </div>
+
+    <h3>🌄 Фоновое изображение (Главный экран)</h3>
+    <div class="form-group">
+      <input type="text" id="bgImageUrl" placeholder="Ссылка на картинку или GIF" oninput="updateJson()">
+    </div>
+
+    <h3>🎨 Промокод на скидку</h3>
+    <div class="form-group" style="display:flex; gap:10px;">
+      <input type="text" id="promoCode" placeholder="SALE50" oninput="updateJson()">
+      <input type="number" id="promoDiscount" placeholder="% скидки" min="0" max="100" oninput="updateJson()">
+    </div>
+  </div>
+
+  <!-- БЛОК ГЕНЕРАЦИИ JSON -->
+  <div class="output-box">
+    <h3>💾 Экспорт данных (config.json)</h3>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">Скопируй этот текст и вставь в свой Gist (config.json) вместо старого.</p>
+    <textarea class="code-output" id="jsonOutput" readonly></textarea>
+    <button class="btn btn-green" style="width:100%; margin-top:15px; padding:15px;" onclick="copyJSON()">📋 Скопировать весь JSON</button>
+  </div>
+
+</div>
 <script>
-  // Дефолтные данные (совпадают с твоим Gist)
-  let config = {
+  // Хранилище данных в админке
+  let adminData = {
     app_enabled: true,
     global_god_mode: false,
-    price: "53 ₽",
+    snow_mode: false,
     announcement: "",
-    valid_codes: ["FARE-8OKF-N8NB", "FARE-8FMJ-S4R9"],
-    banned_codes: ["FARE-BADCODE-111"]
+    price: "53 ₽",
+    error_text: "Неверный код",
+    favicon_url: "",
+    bg_image_url: "",
+    promo_code: "",
+    promo_discount: 0,
+    valid_codes: [
+      "FARE-8OKF-N8NB", 
+      "FARE-8FMJ-S4R9"
+    ],
+    banned_codes: [
+      "FARE-BADCODE-111"
+    ],
+    inspector_phrases: [
+      "Ну что, заяц, прыгай в норку — за неоплаченный проезд! 🐰",
+      "Так-так, а билетик-то где? Показываем!",
+      "Ой, а оплата где? Платим или высаживаем!"
+    ],
+    bus_routes: ["18", "1", "10", "27", "5"]
   };
 
-  function render() {
+  // Переключение вкладок
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
+
+  // Отрисовка списков
+  function renderAll() {
+    // Коды
     const vList = document.getElementById('validList');
     vList.innerHTML = '';
-    config.valid_codes.forEach((code, index) => {
-      vList.innerHTML += `<div class="list-item"><span>${code}</span><button onclick="removeCode(${index})">Удалить</button></div>`;
+    adminData.valid_codes.forEach((code, i) => {
+      vList.innerHTML += `<div class="list-item"><span>${code}</span><div class="actions"><button class="btn btn-red" onclick="removeCode(${i})">Удалить</button></div></div>`;
     });
 
+    // Баны
     const bList = document.getElementById('bannedList');
     bList.innerHTML = '';
-    config.banned_codes.forEach((code, index) => {
-      bList.innerHTML += `<div class="list-item" style="color:#ff3333; border-color:#ff3333;"><span>${code}</span><button onclick="unbanCode(${index})">Разбан</button></div>`;
+    adminData.banned_codes.forEach((code, i) => {
+      bList.innerHTML += `<div class="list-item" style="color:#ff3333; border-color:#ff3333;"><span>${code}</span><div class="actions"><button class="btn btn-green" onclick="unbanCode(${i})">Разбан</button></div></div>`;
     });
 
-    config.price = document.getElementById('price').value;
-    config.announcement = document.getElementById('announcement').value;
-    config.app_enabled = document.getElementById('appEnabled').checked;
-    config.global_god_mode = document.getElementById('globalGodMode').checked;
-    
-    document.getElementById('output').value = JSON.stringify(config, null, 2);
+    // Фразы
+    const pList = document.getElementById('phrasesList');
+    pList.innerHTML = '';
+    adminData.inspector_phrases.forEach((phrase, i) => {
+      pList.innerHTML += `<div class="list-item" style="font-family: 'Inter', sans-serif;"><span>${phrase}</span><div class="actions"><button class="btn btn-red" onclick="removePhrase(${i})">Удалить</button></div></div>`;
+    });
+
+    // Маршруты
+    const busList = document.getElementById('busList');
+    busList.innerHTML = '';
+    adminData.bus_routes.forEach((bus, i) => {
+      busList.innerHTML += `<div class="list-item"><span>Автобус ${bus}</span><div class="actions"><button class="btn btn-red" onclick="removeBus(${i})">Удалить</button></div></div>`;
+    });
+
+    updateJson();
   }
 
+  // Обновление JSON в реальном времени
+  function updateJson() {
+    adminData.app_enabled = document.getElementById('appEnabled').checked;
+    adminData.global_god_mode = document.getElementById('globalGodMode').checked;
+    adminData.snow_mode = document.getElementById('snowMode').checked;
+    adminData.announcement = document.getElementById('announcement').value;
+    adminData.price = document.getElementById('price').value;
+    adminData.error_text = document.getElementById('errorText').value;
+    adminData.favicon_url = document.getElementById('faviconUrl').value;
+    adminData.bg_image_url = document.getElementById('bgImageUrl').value;
+    adminData.promo_code = document.getElementById('promoCode').value.toUpperCase();
+    adminData.promo_discount = parseInt(document.getElementById('promoDiscount').value) || 0;
+
+    document.getElementById('jsonOutput').value = JSON.stringify(adminData, null, 2);
+  }
+
+  // --- ДЕЙСТВИЯ С КОДАМИ ---
   function addCode() {
     const val = document.getElementById('newCode').value.trim().toUpperCase();
-    if (val && !config.valid_codes.includes(val)) {
-      config.valid_codes.push(val);
+    if (val && !adminData.valid_codes.includes(val)) {
+      adminData.valid_codes.push(val);
       document.getElementById('newCode').value = '';
-      render();
+      renderAll();
     }
   }
-
-  function removeCode(index) {
-    config.valid_codes.splice(index, 1);
-    render();
-  }
-
+  function removeCode(i) { adminData.valid_codes.splice(i, 1); renderAll(); }
+  
   function banCode() {
     const val = document.getElementById('banCode').value.trim().toUpperCase();
-    if (val && !config.banned_codes.includes(val)) {
-      config.banned_codes.push(val);
-      config.valid_codes = config.valid_codes.filter(c => c !== val);
+    if (val && !adminData.banned_codes.includes(val)) {
+      adminData.banned_codes.push(val);
+      adminData.valid_codes = adminData.valid_codes.filter(c => c !== val);
       document.getElementById('banCode').value = '';
-      render();
+      renderAll();
     }
   }
+  function unbanCode(i) { adminData.banned_codes.splice(i, 1); renderAll(); }
 
-  function unbanCode(index) {
-    config.banned_codes.splice(index, 1);
-    render();
+  // --- ГЕНЕРАТОР КОДОВ ---
+  function generateCodes() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    for (let j = 0; j < 10; j++) {
+      let part1 = "", part2 = "";
+      for (let i = 0; i < 4; i++) { part1 += chars[Math.floor(Math.random() * chars.length)]; }
+      for (let i = 0; i < 4; i++) { part2 += chars[Math.floor(Math.random() * chars.length)]; }
+      adminData.valid_codes.push(`FARE-${part1}-${part2}`);
+    }
+    renderAll();
   }
 
-  function copyOutput() {
-    const ta = document.getElementById('output');
+  // --- ДЕЙСТВИЯ С КОНТЕНТОМ ---
+  function addPhrase() {
+    const val = document.getElementById('newPhrase').value.trim();
+    if (val) { adminData.inspector_phrases.push(val); document.getElementById('newPhrase').value = ''; renderAll(); }
+  }
+  function removePhrase(i) { adminData.inspector_phrases.splice(i, 1); renderAll(); }
+
+  function addBus() {
+    const val = document.getElementById('newBus').value.trim();
+    if (val && !adminData.bus_routes.includes(val)) { adminData.bus_routes.push(val); document.getElementById('newBus').value = ''; renderAll(); }
+  }
+  function removeBus(i) { adminData.bus_routes.splice(i, 1); renderAll(); }
+
+  // --- КОПИРОВАНИЕ ---
+  function copyJSON() {
+    const ta = document.getElementById('jsonOutput');
     ta.select();
     document.execCommand('copy');
     alert('✅ JSON скопирован! Вставь его в свой Gist.');
   }
 
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', render);
-    input.addEventListener('change', render);
-  });
-
-  render();
+  // Запуск
+  renderAll();
 </script>
 </body>
 </html>
