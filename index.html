@@ -46,7 +46,6 @@
   .pay-btn.locked { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
   .cooldown-msg { display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
 
-  /* ЖИВОЕ ТАБЛО */
   .live-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .live-header h2 { margin: 0; font-size: 24px; color: var(--text-main); }
   .live-indicator { display: flex; align-items: center; gap: 6px; background: rgba(46, 125, 50, 0.15); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(46, 125, 50, 0.3); }
@@ -64,7 +63,6 @@
   .bus-eta span { font-size: 12px; font-weight: 600; display: block; color: var(--text-muted); }
   .loading-spinner { text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 40px; }
 
-  /* ЭКРАНЫ */
   .selector-screen, .demo-screen, .board-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
   .selector-card, .demo-card, .board-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
   .selector-card h2, .demo-card h2, .board-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
@@ -74,13 +72,11 @@
   .stop-card { background: var(--bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 20px; cursor: pointer; text-align: left; font-size: 17px; font-weight: 600; color: var(--text-main); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
   .stop-card:hover { border-color: var(--accent); transform: scale(1.01); }
 
-  /* РАЙОНЫ */
   .district-title { font-size: 16px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin: 25px 0 10px 0; text-align: left; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
   .district-title:first-child { margin-top: 0; }
   
   .hidden { display: none !important; }
   
-  /* МОДАЛКИ */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
   .modal-overlay.open { display: flex; }
   .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
@@ -284,43 +280,97 @@
 document.addEventListener('DOMContentLoaded', () => {
   
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
+  
+  // 3 РАЗНЫХ ПРОКСИ НА СЛУЧАЙ, ЕСЛИ ОДИН УПАДЁТ
+  const PROXIES = [
+      'https://api.allorigins.win/raw?url=',
+      'https://corsproxy.io/?',
+      'https://api.codetabs.com/v1/proxy?quest='
+  ];
+  const TARGET_API = 'https://trolibus51.ru/php/getVehiclesMarkers.php?lng0=33.0&lat0=68.9&lng1=33.1&lat1=68.98';
 
-  // ЖЕСТКО ЗАШИТЫЕ ДАННЫЕ (ПО РАЙОНАМ)
   let config = {
     app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
     price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
     valid_codes: [], banned_codes: [], inspector_phrases: ["Ну что, заяц! 🐰"], 
-    bus_routes: ["18", "1", "10"],
     stops_by_district: {
       "Первомайский": [
         "Улица Фадеев Ручей", "Бондарная улица", "Улица Достоевского", "Улица Бочкова", 
         "Улица Беринга", "Кооперативная улица", "Молодёжный проезд", "Ледовое озеро", 
-        "Морская улица", "Долина Уюта"
+        "Морская улица", "Долина Уюта", "Улица Капитана Копытова", "310-й микрорайон", 
+        "Улица Героев Рыбачьего", "Улица Генерала Щербакова"
       ],
       "Октябрьский": [
-        "Проспект Ленина", "Улица Полярные Зори", "Площадь Пять Углов", "Улица Генерала Журбы", 
+        "Проспект Ленина (в центр)", "Проспект Ленина (из центра)", 
+        "Улица Полярные Зори", "Площадь Пять Углов", "Улица Генерала Журбы", 
         "Улица Академика Книповича", "Улица Капитана Егорова", "Улица Софьи Перовской", 
-        "Улица Карла Маркса", "Кинотеатр «Мурманск»", "Улица Капитана Маклакова", "Почта", 
-        "Улица Скальная", "Музыкальная школа", "Универсам", "Улица Мира", "Улица Старостина", 
-        "Дом престарелых", "Кильдинская улица", "Семёновское озеро", "Улица Юрия Гагарина", 
-        "Улица 6-й Комсомольской Батареи", "Улица Чумбарова-Лучинского", "Школа № 45", 
-        "Улица Аскольдовцев", "Комбинат питания", "Улица Саши Ковалёва", "7-й микрорайон", 
-        "Улица Зои Космодемьянской", "Улица Ломоносова", "Лыжный проезд", "Кольский проспект", 
+        "Улица Карла Маркса", "Кинотеатр Мурманск (в центр)", "Кинотеатр Мурманск (из центра)", 
+        "Улица Капитана Маклакова", "Почта", "Скальная улица", "Музыкальная школа", "Универсам", 
+        "Улица Мира", "Улица Старостина", "Дом престарелых", "Кильдинская улица", 
+        "Семёновское озеро", "Улица Юрия Гагарина", "Улица 6-й Комсомольской Батареи", 
+        "Улица Чумбарова-Лучинского", "Школа", "Улица Аскольдовцев", "Комбинат школьного питания", 
+        "Улица Саши Ковалёва", "Улица Ломоносова", "Лыжный проезд", "Кольский проспект", 
         "Улица Карла Либкнехта", "Улица Челюскинцев", "Проспект Героев-Североморцев", 
-        "Улица Адмирала Флота Лобова"
+        "Улица Адмирала Флота Лобова", "Улица Софьи Перовской, 18", "Плавательный бассейн", 
+        "Привокзальная площадь", "Комсомольская улица", "Хибинский переулок", 
+        "Мурманский арктический университет", "Советская улица", "Улица Фрунзе", 
+        "Улица Володарского", "Проспект Кирова", "Областная больница", "Улица Академика Павлова", 
+        "Улица Радищева", "Троллейбусное депо № 1", "Улица Марата", "Улица Магомета Гаджиева", 
+        "Театральный бульвар"
       ],
       "Ленинский": [
         "Проезд Михаила Ивченко", "Улица Алексея Хлобыстова", "Больница", "Улица Ушакова", 
-        "Улица Нахимова", "Улица Семёна Дежнёва", "Завод Севморпуть", "Героев Рыбачьего", 
-        "Улица Капитана Копытова", "Первомайская улица", "Улица Шевченко", "Якорный переулок", 
-        "Автопарк", "Гвардейская улица", "Улица Папанина", "Улица Буркова", "Проезд Капитана Тарана", 
-        "Улица Крупской", "Верхне-Ростинское шоссе", "Проезд Металлистов", "Улица Свердлова", 
-        "Улица Павлика Морозова", "Улица Подстаницкого", "ДСК", "Торговые базы", "Деловой центр", 
-        "Промышленная улица", "Мясокомбинат", "Комбинат хлебопродуктов", "Металлобаза", 
-        "Улица Фрунзе", "Улица Декабристов", "Улица Марата", "ГТС", "Проспект Кирова", 
-        "Областная больница", "Улица Академика Павлова", "Улица Радищева", "Рогозерская улица"
+        "Улица Нахимова", "Улица Семёна Дежнёва", "Завод Севморпуть", "Первомайская улица", 
+        "Улица Шевченко", "Якорный переулок", "Автопарк", "Гвардейская улица", "Улица Папанина", 
+        "Улица Буркова", "Проезд Капитана Тарана", "Улица Крупской", "Верхне-Ростинское шоссе", 
+        "Проезд Металлистов", "Улица Свердлова", "Улица Павлика Морозова", "Улица Подстаницкого", 
+        "ДСК", "Торговые базы", "Деловой центр", "Промышленная улица", "Мясокомбинат", 
+        "Комбинат хлебопродуктов", "Металлобаза", "Улица Декабристов", "ГТС", "Рогозерская улица", 
+        "Улица Алексея Позднякова", "Улица Александра Невского", "Проезд Ивана Халатина"
       ]
-    }
+    },
+    routesByStop: {}
+  };
+
+  const exactRoutes = {
+    "Завод Севморпуть": ["10А"], "Улица Нахимова": ["10А"], "Улица Ушакова": ["10А"],
+    "Улица Алексея Позднякова": ["10А"], "Больница": ["10А"],
+    "Улица Адмирала Флота Лобова": ["10А", "3Т", "4Т"], "Проезд Михаила Ивченко": ["10А", "3Т", "4Т"],
+    "Улица Алексея Хлобыстова": ["10А", "3Т", "4Т"], "Улица Александра Невского": ["10А", "3Т"],
+    "Улица Чумбарова-Лучинского": ["10А", "18", "5", "3Т", "4Т"],
+    "Улица 6-й Комсомольской Батареи": ["10А", "18", "5", "3Т", "4Т"],
+    "Улица Юрия Гагарина": ["10А", "18", "5", "3Т", "4Т"],
+    "Семёновское озеро": ["10А", "18", "3Т", "4Т"], "Улица Папанина": ["10А"],
+    "Проспект Ленина (в центр)": ["10А", "18", "10Т", "6Т"], "Проспект Ленина (из центра)": ["10А", "18", "10Т", "6Т"], 
+    "Улица Софьи Перовской": ["10А", "18", "29"],
+    "Улица Карла Маркса": ["10А", "18", "10Т"], 
+    "Кинотеатр Мурманск (в центр)": ["10А", "18", "10Т", "29"], "Кинотеатр Мурманск (из центра)": ["10А", "18", "10Т", "29"],
+    "Проезд Капитана Тарана": ["10А", "10Т"], "Улица Академика Книповича": ["10А", "18", "10Т", "29", "3Т", "6Т"],
+    "Гвардейская улица": ["10А", "10Т"], "Кольский проспект": ["10А", "6Т"],
+    "Улица Капитана Пономарёва": ["10А", "18", "10Т", "6Т", "4Т"],
+    "Долина Уюта": ["10А", "18", "10Т", "6Т", "4Т"], "Морская улица": ["10А", "18", "10Т", "6Т", "4Т"],
+    "Ледовое озеро": ["10А", "18", "10Т", "6Т", "4Т"], "Молодёжный проезд": ["10А", "18", "10Т", "6Т", "4Т"],
+    "Кооперативная улица": ["10А", "18", "10Т", "6Т", "4Т"], "Улица Беринга": ["10А", "18", "10Т", "6Т", "4Т"],
+    "Якорный переулок": ["10А", "18", "10Т", "6Т", "4Т"], "Улица Шевченко": ["10А", "10Т", "6Т", "4Т"],
+    "Первомайская улица": ["10А", "10Т", "6Т"], "Улица Фадеев Ручей": ["10А", "18", "10Т", "6Т"],
+    "Улица Капитана Копытова": ["10А", "10Т", "6Т"], "310-й микрорайон": ["10А", "6Т"],
+    "Улица Героев Рыбачьего": ["10А", "10Т", "6Т"], "Бондарная улица": ["18"],
+    "Улица Достоевского": ["18"], "Улица Бочкова": ["18"], "Улица Полярные Зори": ["18"],
+    "Улица Генерала Журбы": ["18", "3Т", "6Т"], "Улица Капитана Егорова": ["18", "3Т", "6Т"],
+    "Площадь Пять Углов": ["18", "3Т", "6Т"], "Улица Капитана Маклакова": ["18", "29"],
+    "Почта": ["18", "29"], "Скальная улица": ["18"], "Музыкальная школа": ["18"],
+    "Универсам": ["18"], "Улица Мира": ["18"], "Улица Старостина": ["18"],
+    "Дом престарелых": ["18"], "Кильдинская улица": ["18", "5"], "Школа": ["18", "5"],
+    "Улица Аскольдовцев": ["18", "5"], "Комбинат школьного питания": ["18"], "Улица Саши Ковалёва": ["18"],
+    "Проезд Ивана Халатина": ["5"], "Улица Софьи Перовской, 18": ["29"],
+    "Плавательный бассейн": ["29", "4Т"], "Привокзальная площадь": ["29", "4Т"],
+    "Комсомольская улица": ["29", "4Т"], "Хибинский переулок": ["29", "4Т"],
+    "Мурманский арктический университет": ["29", "4Т"], "Советская улица": ["29"], "Улица Фрунзе": ["29"],
+    "Улица Челюскинцев": ["3Т", "6Т", "4Т"], "Улица Володарского": ["3Т", "6Т", "4Т"],
+    "Проспект Кирова": ["3Т", "4Т"], "Областная больница": ["3Т"], "Улица Академика Павлова": ["3Т"],
+    "Улица Радищева": ["3Т"], "Улица Карла Либкнехта": ["6Т"], "Троллейбусное депо № 1": ["6Т"],
+    "Улица Генерала Щербакова": ["4Т"], "Улица Марата": ["4Т"], "Улица Магомета Гаджиева": ["4Т"],
+    "Театральный бульвар": ["4Т"]
   };
 
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
@@ -366,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const stopsList = document.getElementById('stopsList');
     stopsList.innerHTML = '';
     
-    // Строго берем только районы. Если в Gist нет районов, код использует зашитые выше.
     let districts = config.stops_by_district;
     
     if (districts) {
@@ -389,67 +438,115 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function showStopBoard(stopName) {
+  async function showStopBoard(stopName) {
     document.getElementById('stopsScreen').classList.add('hidden');
     document.getElementById('liveBoardScreen').classList.remove('hidden');
     document.getElementById('currentStopName').textContent = '🚌 ' + stopName;
     
     const busList = document.getElementById('busList');
-    busList.innerHTML = '<div class="loading-spinner">Загрузка...</div>';
+    busList.innerHTML = '<div class="loading-spinner">Загрузка реальных данных...</div>';
     
     busIntervals.forEach(clearInterval);
     busIntervals = [];
 
-    setTimeout(() => {
-      busList.innerHTML = '';
-      let routes = config.bus_routes || ["18", "1", "10"];
-      
-      if (routes.length === 0) {
-          busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Маршруты не настроены.</p>';
-          return;
-      }
+    let routes = exactRoutes[stopName] || [];
 
-      routes.forEach(routeNum => {
-          const typeName = 'Автобус';
-          let etaMinutes = Math.floor(Math.random() * 14) + 2;
+    if (routes.length === 0) {
+        busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Нет данных по маршрутам для этой остановки.</p>';
+        return;
+    }
 
-          const card = document.createElement('div');
-          card.className = 'bus-card';
-          card.innerHTML = `
-              <div class="bus-info-left">
-              <div class="bus-number">${typeName} №${routeNum}</div>
-              </div>
-              <div class="bus-eta" id="eta-${routeNum}">
-              ${etaMinutes} мин<span>до прибытия</span>
-              </div>
-          `;
+    let data = null;
 
-          card.onclick = () => {
-              document.getElementById('liveBoardScreen').classList.add('hidden');
-              document.getElementById('mainPage').classList.remove('hidden');
-              document.getElementById('routeTitle').textContent = `${typeName} №${routeNum}`;
-              document.getElementById('vehicleNumber').textContent = '—'; 
-              saveTrip(`${typeName} №${routeNum}`, config.price, '—');
-              drawQR(); 
-              startTimer();
-          };
+    // ПРОБУЕМ ПО ОЧЕРЕДИ ВСЕ ПРОКСИ
+    for (let i = 0; i < PROXIES.length; i++) {
+        try {
+            busList.innerHTML = `<div class="loading-spinner">Загрузка данных (попытка ${i + 1})...</div>`;
+            const proxyUrl = PROXIES[i] + encodeURIComponent(TARGET_API);
+            
+            const response = await fetch(proxyUrl);
+            if (!response.ok) continue; 
+            
+            const json = await response.json();
+            if (json && json.anims) {
+                data = json;
+                break; // Успех! Выходим из цикла
+            }
+        } catch (e) {
+            console.warn(`Прокси ${i + 1} упал:`, e);
+        }
+    }
 
-          busList.appendChild(card);
+    if (!data) {
+        busList.innerHTML = '<p style="text-align:center; color:var(--red); font-weight: 600;">Не удалось получить данные с сервера.<br><span style="color:var(--text-muted); font-size:12px;">Попробуйте позже.</span></p>';
+        return;
+    }
 
-          const interval = setInterval(() => {
-              if (etaMinutes > 1) {
-              etaMinutes--;
-              const el = document.getElementById(`eta-${routeNum}`);
-              if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
-              } else {
-              const el = document.getElementById(`eta-${routeNum}`);
-              if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
-              }
-          }, 60000);
-          
-          busIntervals.push(interval);
-      });
-    }, 300);
+    busList.innerHTML = '';
+
+    let activeBuses = data.anims.filter(bus => routes.includes(bus.rnum));
+    const uniqueBuses = [];
+    const seen = new Set();
+    activeBuses.forEach(bus => {
+        const uniqueId = bus.rnum + '-' + bus.gos_num;
+        if (!seen.has(uniqueId)) {
+            seen.add(uniqueId);
+            uniqueBuses.push(bus);
+        }
+    });
+
+    if (uniqueBuses.length === 0) {
+        busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Транспорт с этих маршрутов сейчас не в пути.</p>';
+        return;
+    }
+
+    uniqueBuses.forEach(bus => {
+        let typeName = 'Автобус';
+        let displayRoute = bus.rnum;
+        if (bus.rtype === 'Т') {
+            typeName = 'Троллейбус';
+        }
+
+        const tsNumber = bus.gos_num || 'Без номера';
+        let etaMinutes = Math.floor(Math.random() * 10) + 2;
+
+        const card = document.createElement('div');
+        card.className = 'bus-card';
+        card.innerHTML = `
+            <div class="bus-info-left">
+            <div class="bus-number">${typeName} №${displayRoute}</div>
+            <div class="bus-ts" style="font-size: 12px; color: var(--accent);">Т/С: ${tsNumber}</div>
+            </div>
+            <div class="bus-eta" id="eta-${bus.rnum}-${tsNumber}">
+            ${etaMinutes} мин<span>до прибытия</span>
+            </div>
+        `;
+
+        card.onclick = () => {
+            document.getElementById('liveBoardScreen').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('routeTitle').textContent = `${typeName} №${displayRoute}`;
+            document.getElementById('vehicleNumber').textContent = tsNumber;
+            saveTrip(`${typeName} №${displayRoute}`, config.price, tsNumber);
+            drawQR(); 
+            startTimer();
+        };
+
+        busList.appendChild(card);
+
+        const interval = setInterval(() => {
+            if (etaMinutes > 1) {
+            etaMinutes--;
+            const el = document.getElementById(`eta-${bus.rnum}-${tsNumber}`);
+            if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
+            } else {
+            const el = document.getElementById(`eta-${bus.rnum}-${tsNumber}`);
+            if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
+            }
+        }, 60000);
+        
+        busIntervals.push(interval);
+    });
   }
 
   updateUI();
@@ -457,7 +554,6 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch(CONFIG_URL + '?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
-      // Если в Gist есть stops_by_district, он их подхватит. Если нет, останутся зашитые.
       config = { ...config, ...data };
       
       if (config.app_enabled === false) { document.getElementById('maintenanceScreen').classList.add('show'); return; }
@@ -483,7 +579,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(e => {
       console.log("Ошибка Gist, используем локальные данные:", e);
-      // Если Gist упал, мы все равно рендерим остановки из зашитых данных!
       renderStops();
     });
 
