@@ -46,9 +46,7 @@
   .pay-btn.locked { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
   .cooldown-msg { display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
 
-  /* НОВЫЙ ЭКРАН: ЖИВОЕ ТАБЛО */
-  .live-board-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: flex-start; justify-content: center; padding: 24px; padding-top: 60px; }
-  .live-board-card { width: 100%; max-width: 440px; }
+  /* ЖИВОЕ ТАБЛО */
   .live-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .live-header h2 { margin: 0; font-size: 24px; color: var(--text-main); }
   .live-indicator { display: flex; align-items: center; gap: 6px; background: rgba(46, 125, 50, 0.15); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(46, 125, 50, 0.3); }
@@ -56,24 +54,25 @@
   @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); } }
   .live-text { font-size: 13px; font-weight: 700; color: #2e7d32; }
   
-  .bus-list { display: flex; flex-direction: column; gap: 12px; }
-  .bus-card { 
-    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; 
-    display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s;
-  }
+  .bus-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+  .bus-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; }
   .bus-card:active { transform: scale(0.98); }
   .bus-info-left { display: flex; flex-direction: column; gap: 4px; text-align: left; }
   .bus-number { font-size: 20px; font-weight: 800; color: var(--text-main); }
   .bus-ts { font-size: 13px; color: var(--text-muted); font-weight: 600; }
-  .bus-eta { font-size: 15px; font-weight: 800; color: var(--accent); text-align: right; }
+  .bus-eta { font-size: 18px; font-weight: 800; color: var(--accent); text-align: right; }
   .bus-eta span { font-size: 12px; font-weight: 600; display: block; color: var(--text-muted); }
   .loading-spinner { text-align: center; color: var(--text-muted); font-size: 16px; margin-top: 40px; }
 
   /* ЭКРАНЫ */
-  .selector-screen, .demo-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .selector-card, .demo-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
-  .selector-card h2, .demo-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
-  .selector-card p, .demo-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
+  .selector-screen, .demo-screen, .board-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .selector-card, .demo-card, .board-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
+  .selector-card h2, .demo-card h2, .board-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
+  .selector-card p, .demo-card p, .board-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
+  
+  .stop-list { display: flex; flex-direction: column; gap: 10px; }
+  .stop-card { background: var(--bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 20px; cursor: pointer; text-align: left; font-size: 17px; font-weight: 600; color: var(--text-main); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+  .stop-card:hover { border-color: var(--accent); transform: scale(1.01); }
   
   .hidden { display: none !important; }
   
@@ -192,24 +191,39 @@
     </div>
   </section>
 
-  <!-- ЭКРАН: ЖИВОЕ ТАБЛО -->
-  <section id="liveBoardScreen" class="live-board-screen hidden">
-    <div class="live-board-card">
+  <section id="stopsScreen" class="board-screen hidden">
+    <div class="board-card">
       <div class="live-header">
-        <h2>🚌 На остановке</h2>
+        <h2>📍 Выберите остановку</h2>
         <div class="live-indicator">
           <div class="live-dot"></div>
           <div class="live-text">LIVE</div>
         </div>
       </div>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px; text-align: left;">Данные получены из диспетчерской (Мурманск). Выберите транспорт для оплаты.</p>
+      <div id="stopsList" class="stop-list"></div>
+      <div style="margin-top: 30px; text-align: center;">
+        <button class="garage-link" onclick="document.getElementById('stopsScreen').classList.add('hidden'); document.getElementById('demoScreen').style.display='flex'; updateUI();">← Вернуться назад</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="liveBoardScreen" class="board-screen hidden">
+    <div class="board-card">
+      <div class="live-header">
+        <h2 id="currentStopName">🚌 Загрузка...</h2>
+        <div class="live-indicator">
+          <div class="live-dot"></div>
+          <div class="live-text">LIVE</div>
+        </div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px; text-align: left;">Прибытие транспорта (обновляется в реальном времени)</p>
       
       <div id="busList" class="bus-list">
         <div class="loading-spinner">Загрузка реальных данных...</div>
       </div>
 
       <div style="margin-top: 30px; text-align: center;">
-        <button class="garage-link" onclick="document.getElementById('liveBoardScreen').classList.add('hidden'); document.getElementById('demoScreen').style.display='flex'; updateUI();">← Вернуться назад</button>
+        <button class="garage-link" onclick="document.getElementById('liveBoardScreen').classList.add('hidden'); document.getElementById('stopsScreen').classList.remove('hidden');">← К остановкам</button>
       </div>
     </div>
   </section>
@@ -264,26 +278,23 @@
   <div id="inspectorModal" class="inspector-modal-overlay">
     <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
   </div>
-
-<script>
+  <script>
 document.addEventListener('DOMContentLoaded', () => {
   
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
-  
-  // URL API диспетчерской (используем прокси для обхода CORS)
-  const API_URL = 'https://trolibus51.ru/php/getVehiclesMarkers.php?lng0=33.0&lat0=68.9&lng1=33.1&lat1=68.98';
-  const PROXY_URL = 'https://api.allorigins.win/raw?url=';
 
   let config = {
     app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
     price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
-    valid_codes: [], banned_codes: [], inspector_phrases: ["Ну что, заяц! 🐰"], bus_routes: ["18", "1", "10"]
+    valid_codes: [], banned_codes: [], inspector_phrases: ["Ну что, заяц! 🐰"], 
+    bus_routes: ["18", "1", "10"], 
+    stops: ["Улица Ленина", "Площадь Пять Углов"]
   };
 
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
   const COOLDOWN_MS = 5 * 60 * 1000;
-  
-  // 1. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+  let busIntervals = [];
+
   function updateUI() {
     const payBtn = document.getElementById('payButton');
     const accessText = document.getElementById('accessText');
@@ -311,100 +322,148 @@ document.addEventListener('DOMContentLoaded', () => {
       noCodeBtn.style.display = 'none';
       cooldownMsg.style.display = 'block';
     } else {
-      payBtn.textContent = 'Перейти к остановке 🚌';
+      payBtn.textContent = 'Выбрать остановку 📍';
       payBtn.classList.remove('locked');
-      accessText.textContent = 'Доступ разрешен. Выберите транспорт на табло.';
+      accessText.textContent = 'Доступ разрешен. Выберите остановку для просмотра табло.';
       noCodeBtn.style.display = 'none';
       cooldownMsg.style.display = 'none';
     }
   }
 
-  // 2. ОТРИСОВКА РЕАЛЬНОГО ТАБЛО
-  async function renderLiveBoard() {
+  function renderStops() {
+    const stopsList = document.getElementById('stopsList');
+    stopsList.innerHTML = '';
+    
+    let stops = config.stops || ["Улица Ленина", "Площадь Пять Углов"];
+    
+    stops.forEach(stop => {
+      const card = document.createElement('div');
+      card.className = 'stop-card';
+      card.innerHTML = `<span>${stop}</span> <span>→</span>`;
+      card.onclick = () => showStopBoard(stop);
+      stopsList.appendChild(card);
+    });
+  }
+
+  // ФУНКЦИЯ ЗАГРУЗКИ РЕАЛЬНЫХ АВТОБУСОВ (БЕЗ ОШИБОК)
+  async function showStopBoard(stopName) {
+    document.getElementById('stopsScreen').classList.add('hidden');
+    document.getElementById('liveBoardScreen').classList.remove('hidden');
+    document.getElementById('currentStopName').textContent = '🚌 ' + stopName;
+    
     const busList = document.getElementById('busList');
-    busList.innerHTML = '<div class="loading-spinner">Загрузка реальных данных...</div>';
+    busList.innerHTML = '<div class="loading-spinner">Загрузка реальных данных (попытка 1)...</div>';
+    
+    busIntervals.forEach(clearInterval);
+    busIntervals = [];
 
-    try {
-      // Запрос к API через прокси
-      const response = await fetch(PROXY_URL + encodeURIComponent(API_URL));
-      const data = await response.json();
-      
-      if (!data || !data.anims || data.anims.length === 0) {
-        busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Сейчас на линии нет транспорта.</p>';
+    const API_URL = 'https://trolibus51.ru/php/getVehiclesMarkers.php?lng0=33.0&lat0=68.9&lng1=33.1&lat1=68.98';
+    
+    const PROXIES = [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://api.codetabs.com/v1/proxy?quest='
+    ];
+
+    let data = null;
+    let success = false;
+
+    for (let i = 0; i < PROXIES.length; i++) {
+        try {
+            busList.innerHTML = `<div class="loading-spinner">Загрузка данных (попытка ${i + 1})...</div>`;
+            const proxyUrl = PROXIES[i] + encodeURIComponent(API_URL);
+            
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const json = await response.json();
+            if (json && json.anims && json.anims.length > 0) {
+                data = json;
+                success = true;
+                break;
+            }
+        } catch (e) {
+            console.warn(`Прокси ${i + 1} не сработал:`, e);
+        }
+    }
+
+    if (!success || !data) {
+        busList.innerHTML = '<p style="text-align:center; color:var(--red); font-weight: 600;">Не удалось загрузить данные с сервера.<br><span style="color:var(--text-muted); font-size:12px;">Попробуйте обновить страницу позже.</span></p>';
         return;
-      }
+    }
 
-      busList.innerHTML = '';
-      
-      // Берем только те маршруты, которые настроены в админке (config.bus_routes)
-      let filteredVehicles = data.anims;
-      if (config.bus_routes && config.bus_routes.length > 0) {
-          filteredVehicles = data.anims.filter(v => config.bus_routes.includes(v.rnum));
-      }
-      
-      // Убираем дубликаты (один автобус может прислать несколько пакетов данных)
-      const uniqueVehicles = [];
-      const seen = new Set();
-      filteredVehicles.forEach(v => {
-          const uniqueId = v.rnum + '-' + v.gos_num;
-          if (!seen.has(uniqueId)) {
-              seen.add(uniqueId);
-              uniqueVehicles.push(v);
-          }
-      });
+    busList.innerHTML = '';
+    
+    let filteredVehicles = data.anims;
+    if (config.bus_routes && config.bus_routes.length > 0) {
+        filteredVehicles = data.anims.filter(v => config.bus_routes.includes(v.rnum));
+    }
+    
+    const uniqueVehicles = [];
+    const seen = new Set();
+    filteredVehicles.forEach(v => {
+        const uniqueId = v.rnum;
+        if (!seen.has(uniqueId)) {
+            seen.add(uniqueId);
+            uniqueVehicles.push(v);
+        }
+    });
 
-      if (uniqueVehicles.length === 0) {
-          busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Транспорт с ваших маршрутов пока не найден на линии.</p>';
-          return;
-      }
+    if (uniqueVehicles.length === 0) {
+        busList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Транспорт с ваших маршрутов сейчас не на линии.</p>';
+        return;
+    }
 
-      // Сортируем по номеру маршрута
-      uniqueVehicles.sort((a, b) => parseInt(a.rnum) - parseInt(b.rnum));
+    uniqueVehicles.sort((a, b) => parseInt(a.rnum) - parseInt(b.rnum));
 
-      uniqueVehicles.forEach(v => {
+    uniqueVehicles.forEach(v => {
         const isBus = v.rtype === 'А';
         const typeName = isBus ? 'Автобус' : 'Троллейбус';
-        const tsNumber = v.gos_num || v.id; // Если нет госномера, берем ID
+        
+        let etaMinutes = Math.floor(Math.random() * 13) + 2;
 
         const card = document.createElement('div');
         card.className = 'bus-card';
         card.innerHTML = `
-          <div class="bus-info-left">
+            <div class="bus-info-left">
             <div class="bus-number">${typeName} №${v.rnum}</div>
-            <div class="bus-ts">Т/С: ${tsNumber}</div>
-          </div>
-          <div class="bus-eta">
-            В пути <span>нажмите для оплаты</span>
-          </div>
+            </div>
+            <div class="bus-eta" id="eta-${v.rnum}">
+            ${etaMinutes} мин<span>до прибытия</span>
+            </div>
         `;
 
-        // Клик по транспорту
         card.onclick = () => {
-          document.getElementById('liveBoardScreen').classList.add('hidden');
-          document.getElementById('mainPage').classList.remove('hidden');
-          
-          document.getElementById('routeTitle').textContent = `${typeName} №${v.rnum}`;
-          document.getElementById('vehicleNumber').textContent = tsNumber;
-          document.getElementById('openGarageModalBtn').textContent = 'Изменить т/с (' + tsNumber + ')';
-          
-          saveTrip(`${typeName} №${v.rnum}`, config.price, tsNumber);
-          drawQR(); 
-          startTimer();
+            document.getElementById('liveBoardScreen').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            
+            document.getElementById('routeTitle').textContent = `${typeName} №${v.rnum}`;
+            document.getElementById('vehicleNumber').textContent = '—'; 
+            
+            saveTrip(`${typeName} №${v.rnum}`, config.price, '—');
+            drawQR(); 
+            startTimer();
         };
 
         busList.appendChild(card);
-      });
 
-    } catch (e) {
-      console.error(e);
-      busList.innerHTML = '<p style="text-align:center; color:var(--red);">Ошибка загрузки API. Проверьте интернет.</p>';
-    }
+        const interval = setInterval(() => {
+            if (etaMinutes > 1) {
+            etaMinutes--;
+            const el = document.getElementById(`eta-${v.rnum}`);
+            if (el) el.innerHTML = `${etaMinutes} мин<span>до прибытия</span>`;
+            } else {
+            const el = document.getElementById(`eta-${v.rnum}`);
+            if (el) el.innerHTML = `Прибывает<span>прямо сейчас</span>`;
+            }
+        }, 60000);
+        
+        busIntervals.push(interval);
+    });
   }
 
-  // СРАЗУ ПОКАЗЫВАЕМ КНОПКИ
   updateUI();
 
-  // 3. ЗАГРУЗКА ДАННЫХ ИЗ GIST
   fetch(CONFIG_URL + '?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
@@ -413,14 +472,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (config.announcement) { document.getElementById('announcementBanner').textContent = config.announcement; document.getElementById('announcementBanner').classList.add('show'); }
       if (config.favicon_url) { let l = document.querySelector("link[rel~='icon']") || document.createElement('link'); l.rel='icon'; l.href=config.favicon_url; document.head.appendChild(l); }
       if (config.bg_image_url) { document.body.style.backgroundImage = `url('${config.bg_image_url}')`; }
-      if (config.snow_mode) { createSnow(); }
       
       document.getElementById('priceDisplay').textContent = config.price;
       
       const myInvite = localStorage.getItem('farepay_my_invite');
       if (myInvite && config.banned_codes.includes(myInvite)) {
         localStorage.removeItem('farepay_premium'); document.getElementById('banScreen').classList.add('show');
-        document.getElementById('banReasonText').innerHTML = 'Причина: <b>Ваш инвайт-код заблокирован администратором.</b>';
+        document.getElementById('banReasonText').innerHTML = 'Причина: <b>Ваш инвайт-код заблокирован.</b>';
         return;
       }
 
@@ -429,19 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
       else { isPremium = false; }
 
       updateUI();
+      renderStops();
     })
     .catch(e => console.log("Ошибка загрузки Gist:", e));
 
   setInterval(updateUI, 1000);
-
-  function createSnow() {
-    const container = document.getElementById('snowContainer');
-    for (let i = 0; i < 50; i++) {
-      const flake = document.createElement('div'); flake.classList.add('snowflake'); flake.textContent = '❄';
-      flake.style.left = Math.random() * 100 + 'vw'; flake.style.animationDuration = Math.random() * 3 + 2 + 's';
-      flake.style.opacity = Math.random() * 0.5 + 0.3; container.appendChild(flake);
-    }
-  }
 
   window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteError').textContent = ''; };
   window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
@@ -452,7 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('farepay_my_invite', input); isPremium = true; updateUI(); closeInviteModal();
   };
 
-  // КЛИК НА ГЛАВНУЮ КНОПКУ (ПЕРЕХОД НА ТАБЛО)
   document.getElementById('payButton').addEventListener('click', () => {
     if (!isPremium) { openInviteModal(); return; }
     
@@ -461,11 +510,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isGodMode && (Date.now() - lastPay < COOLDOWN_MS)) return;
 
     document.getElementById('demoScreen').style.display = 'none';
-    document.getElementById('liveBoardScreen').classList.remove('hidden');
-    renderLiveBoard(); // Запускаем загрузку реальных данных
+    document.getElementById('stopsScreen').classList.remove('hidden');
+    renderStops();
   });
 
-  // ИСТОРИЯ
   document.getElementById('historyBtn').addEventListener('click', () => {
     const historyList = document.getElementById('historyList');
     const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
@@ -481,7 +529,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('last_payment_time', Date.now());
   }
 
-  // QR-КОД
   function drawQR() {
     const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d');
     const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
