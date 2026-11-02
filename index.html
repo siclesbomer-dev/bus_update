@@ -163,6 +163,7 @@
       <h2>Оплата проезда</h2>
       <p id="accessText">Для доступа к оплате требуется инвайт-код.</p>
       
+      <!-- ТЕКСТ КНОПКИ ИЗМЕНЕН, ЧТОБЫ НЕ БЫЛО "ОЖИДАНИЯ" -->
       <button id="payButton" class="pay-btn locked">🔒 Введите инвайт-код</button>
       <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
       
@@ -250,12 +251,11 @@
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  
-  // ССЫЛКА НА ТВОЙ GIST (АВТОМАТИЧЕСКИ ЧИТАЕТ ПОСЛЕДНЮЮ ВЕРСИЮ)
+// Убираем ожидание DOM, скрипт в самом конце, все элементы уже есть
+try {
+  // ССЫЛКА НА ТВОЙ GIST
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
 
-  // Базовый конфиг, пока не загрузился новый
   let config = {
     app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
     price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
   const COOLDOWN_MS = 5 * 60 * 1000;
 
-  // 1. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА (БЕЗ ОЖИДАНИЯ СЕТИ)
+  // 1. СРАЗУ ОБНОВЛЯЕМ ИНТЕРФЕЙС
   function updateUI() {
     const payBtn = document.getElementById('payButton');
     const accessText = document.getElementById('accessText');
@@ -345,16 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // СРАЗУ ПОКАЗЫВАЕМ КНОПКИ
   updateUI();
   renderRoutes();
 
-  // 3. ЗАГРУЗКА НАСТРОЕК С GITHUB (В ФОНЕ)
+  // 3. ЗАГРУЗКА ДАННЫХ ИЗ GIST
   fetch(CONFIG_URL + '?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
       config = { ...config, ...data };
-      
       if (config.app_enabled === false) { document.getElementById('maintenanceScreen').classList.add('show'); return; }
       if (config.announcement) { document.getElementById('announcementBanner').textContent = config.announcement; document.getElementById('announcementBanner').classList.add('show'); }
       if (config.favicon_url) { let l = document.querySelector("link[rel~='icon']") || document.createElement('link'); l.rel='icon'; l.href=config.favicon_url; document.head.appendChild(l); }
@@ -365,8 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const myInvite = localStorage.getItem('farepay_my_invite');
       if (myInvite && config.banned_codes.includes(myInvite)) {
-        localStorage.removeItem('farepay_premium');
-        document.getElementById('banScreen').classList.add('show');
+        localStorage.removeItem('farepay_premium'); document.getElementById('banScreen').classList.add('show');
         document.getElementById('banReasonText').innerHTML = 'Причина: <b>Ваш инвайт-код заблокирован администратором.</b>';
         return;
       }
@@ -378,12 +375,10 @@ document.addEventListener('DOMContentLoaded', () => {
       updateUI();
       renderRoutes();
     })
-    .catch(e => console.log("Ошибка загрузки Gist:", e));
+    .catch(e => console.log("Ошибка загрузки Gist (работаем на локальных данных):", e));
 
-  // Интервал для обновления кулдауна
   setInterval(updateUI, 1000);
 
-  // СНЕГ
   function createSnow() {
     const container = document.getElementById('snowContainer');
     for (let i = 0; i < 50; i++) {
@@ -393,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // МОДАЛКИ И ИНВАЙТЫ
   window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteError').textContent = ''; };
   window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
   window.checkInviteCode = function() {
@@ -403,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('farepay_my_invite', input); isPremium = true; updateUI(); closeInviteModal();
   };
 
-  // ОПЛАТА
   document.getElementById('payButton').addEventListener('click', () => {
     if (!isPremium) { openInviteModal(); return; }
     const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
@@ -445,7 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ИСТОРИЯ
   document.getElementById('historyBtn').addEventListener('click', () => {
     const historyList = document.getElementById('historyList');
     const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
@@ -460,7 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
     trips.push({ route: routeName, price: price, date: dateStr, vehicle: vehicle || '—' }); localStorage.setItem('farepay_trips', JSON.stringify(trips));
   }
 
-  // QR-КОД И ТАЙМЕР
   function drawQR() {
     const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d');
     const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
@@ -495,7 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatMoscowDate(d) { const pad = n => String(n).padStart(2, '0'); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
   document.getElementById('payDate').textContent = formatMoscowDate(nowMoscow());
 
-  // МОДАЛКА Т/С
   const openGarageModalBtn = document.getElementById('openGarageModalBtn');
   const garageModal = document.getElementById('garageModal');
   const modalGarageInput = document.getElementById('modalGarageInput');
@@ -515,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
     vehicleNumber.textContent = val; openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; closeModal();
   });
 
-  // РАЗРАБОТЧИК
   const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
   const devModal = document.getElementById('devModal');
   const devReasons = document.getElementById('devReasons');
@@ -544,7 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   devTelegramBtn.addEventListener('click', () => { window.open(TELEGRAM_URL, '_blank', 'noopener'); });
 
-  // КОНТРОЛЁР
   let audioCtx = null; let inspectorTimeout = null;
   function getAudioCtx() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; } } if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
   function playInspectorSound() {
@@ -568,13 +556,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inspectorBtn').addEventListener('click', showInspector);
   document.getElementById('inspectorModal').addEventListener('click', () => { document.getElementById('inspectorModal').classList.remove('show'); clearTimeout(inspectorTimeout); });
 
-  // ТЕМЫ
   const themeMenu = document.getElementById('themeMenu'); const themeOpts = document.querySelectorAll('.theme-opt');
   const savedTheme = localStorage.getItem('app-theme'); if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
   window.toggleThemeMenu = function() { themeMenu.classList.toggle('open'); };
   themeOpts.forEach(opt => { opt.addEventListener('click', () => { document.body.setAttribute('data-theme', opt.getAttribute('data-theme')); localStorage.setItem('app-theme', opt.getAttribute('data-theme')); themeMenu.classList.remove('open'); }); });
 
-});
+} catch (error) {
+  console.error("Критическая ошибка в скрипте:", error);
+  alert("Ошибка в коде приложения. Проверьте консоль.");
+}
 </script>
 </body>
 </html>
