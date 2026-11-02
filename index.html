@@ -18,7 +18,6 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
   body { margin: 0; background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
   
-  /* СНЕГ */
   .snowflake { position: fixed; top: -10px; color: #fff; font-size: 1.5em; pointer-events: none; z-index: 0; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(105vh) rotate(360deg); } }
 
@@ -28,13 +27,11 @@
   .theme-opt { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
   .theme-opt[data-theme="blue"] { background: #29b6f6; } .theme-opt[data-theme="orange"] { background: #ff6b00; } .theme-opt[data-theme="neon"] { background: #00ff66; } .theme-opt[data-theme="purple"] { background: #9d4edd; } .theme-opt[data-theme="cherry"] { background: #ff4d6d; }
 
-  /* ШАПКА */
   .header-wave { position: relative; height: 190px; background: var(--header-bg); overflow: hidden; }
   .header-wave::before { content: ""; position: absolute; top: -50px; left: -10%; width: 120%; height: 150px; background: var(--wave-top); border-radius: 0 0 50% 50% / 0 0 100% 100%; }
   .header-wave::after { content: ""; position: absolute; bottom: -10px; left: -10%; width: 120%; height: 120px; background: var(--bg); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1; }
   .header-content { position: relative; z-index: 2; text-align: center; color: #fff; font-size: 24px; font-weight: 500; padding-top: 85px; }
 
-  /* КОНТЕНТ */
   .main-container { padding: 0 20px 40px; max-width: 440px; margin: -30px auto 0; position: relative; z-index: 10; text-align: center; }
   .qr-logo { width: 90px; height: 90px; background: var(--card-bg); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); overflow: hidden; }
   .qr-logo-inner { width: 80px; height: 80px; background: var(--btn-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -2px; }
@@ -52,7 +49,6 @@
   .pay-btn.locked { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
   .cooldown-msg { display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
 
-  /* ЭКРАНЫ */
   .selector-screen, .demo-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
   .selector-card, .demo-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
   .selector-card h2, .demo-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
@@ -66,7 +62,6 @@
   .result-title { font-size: 32px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; color: var(--text-main); }
   .result-subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 17px; }
 
-  /* МОДАЛКИ */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
   .modal-overlay.open { display: flex; }
   .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
@@ -81,7 +76,6 @@
   .modal-error { color: #ff4d4d; font-size: 14px; margin-bottom: 12px; min-height: 18px; font-weight: 600; }
   .garage-link { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
 
-  /* РАЗРАБОТЧИК */
   .dev-trigger { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
   .dev-modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 22px; padding: 26px 22px 22px; width: 92%; max-width: 400px; text-align: left; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
   .dev-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
@@ -100,7 +94,6 @@
   .dev-actions { display: flex; gap: 10px; }
   .dev-actions .modal-btn.telegram { background: var(--btn-gradient); color: #fff; }
 
-  /* КОНТРОЛЁР */
   .inspector-btn { width: 100%; border: 2px dashed var(--accent); border-radius: 16px; padding: 14px 20px; font-size: 17px; font-weight: 700; color: var(--accent); background: transparent; cursor: pointer; margin-top: 8px; margin-bottom: 12px; transition: all 0.2s; }
   .inspector-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
   .inspector-modal-overlay.show { display: flex; }
@@ -109,7 +102,6 @@
   .inspector-text { font-size: 21px; font-weight: 800; color: var(--text-main); line-height: 1.4; }
   .inspector-sub { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
 
-  /* БАН */
   .ban-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; color: #ff3333; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
   .ban-screen.show { display: flex; }
   .ban-icon { font-size: 90px; margin-bottom: 20px; animation: pulseRed 1s infinite alternate; }
@@ -118,23 +110,19 @@
   .ban-reason { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff3333; padding: 16px 20px; border-radius: 12px; font-size: 15px; font-weight: 600; max-width: 400px; margin-bottom: 30px; }
   .ban-appeal-btn { background: transparent; border: 2px solid #ff3333; color: #ff3333; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; }
 
-  /* ХАКЕРСКИЙ ТЕРМИНАЛ */
   .hacker-terminal { display: none; background: #000; border: 2px solid #00ff66; border-radius: 12px; padding: 16px; text-align: left; font-family: monospace; font-size: 13px; color: #00ff66; height: 120px; overflow-y: auto; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.2); }
   .hacker-terminal.show { display: block; }
   .hacker-terminal p { margin: 0 0 4px 0; line-height: 1.2; }
 
-  /* ИСТОРИЯ */
   .history-btn { background: var(--input-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 14px; margin-bottom: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .history-list { max-height: 300px; overflow-y: auto; text-align: left; margin-top: 15px; }
   .history-item { background: var(--input-bg); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
   .history-item h4 { margin: 0 0 4px 0; font-size: 15px; color: var(--text-main); }
   .history-item p { margin: 0; font-size: 12px; color: var(--text-muted); }
 
-  /* ОБЪЯВЛЕНИЕ */
   .announcement-banner { display: none; background: var(--btn-gradient); color: #fff; padding: 10px 20px; text-align: center; font-weight: 600; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; z-index: 100; }
   .announcement-banner.show { display: block; }
 
-  /* KILL SWITCH */
   .maintenance-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 999999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
   .maintenance-screen.show { display: flex; }
   .maintenance-icon { font-size: 80px; margin-bottom: 20px; }
@@ -143,122 +131,121 @@
 </style>
 </head>
 <body>
-<div id="snowContainer"></div>
+    <div id="snowContainer"></div>
 
-<div id="maintenanceScreen" class="maintenance-screen">
-  <div class="maintenance-icon">🚧</div>
-  <div class="maintenance-title">Технические работы</div>
-  <div class="maintenance-text">Приложение временно недоступно. Зайдите позже.</div>
-</div>
+  <div id="maintenanceScreen" class="maintenance-screen">
+    <div class="maintenance-icon">🚧</div>
+    <div class="maintenance-title">Технические работы</div>
+    <div class="maintenance-text">Приложение временно недоступно. Зайдите позже.</div>
+  </div>
 
-<div id="banScreen" class="ban-screen">
-  <div class="ban-icon">🚫</div>
-  <div class="ban-title">Доступ заблокирован</div>
-  <div class="ban-reason" id="banReasonText">Причина: Нарушение правил безопасности.</div>
-  <a href="https://t.me/Demon_of_latvia" target="_blank" class="ban-appeal-btn">Оспорить бан</a>
-</div>
+  <div id="banScreen" class="ban-screen">
+    <div class="ban-icon">🚫</div>
+    <div class="ban-title">Доступ заблокирован</div>
+    <div class="ban-reason" id="banReasonText">Причина: Нарушение правил безопасности.</div>
+    <a href="https://t.me/Demon_of_latvia" target="_blank" class="ban-appeal-btn">Оспорить бан</a>
+  </div>
 
-<div class="theme-toggle" onclick="toggleThemeMenu()">🎨</div>
-<div class="theme-menu" id="themeMenu">
-  <div class="theme-opt" data-theme="blue" title="Голубая"></div>
-  <div class="theme-opt" data-theme="orange" title="FarePay"></div>
-  <div class="theme-opt" data-theme="neon" title="Cyberpunk"></div>
-  <div class="theme-opt" data-theme="purple" title="Premium"></div>
-  <div class="theme-opt" data-theme="cherry" title="Cherry"></div>
-</div>
+  <div class="theme-toggle" onclick="toggleThemeMenu()">🎨</div>
+  <div class="theme-menu" id="themeMenu">
+    <div class="theme-opt" data-theme="blue" title="Голубая"></div>
+    <div class="theme-opt" data-theme="orange" title="FarePay"></div>
+    <div class="theme-opt" data-theme="neon" title="Cyberpunk"></div>
+    <div class="theme-opt" data-theme="purple" title="Premium"></div>
+    <div class="theme-opt" data-theme="cherry" title="Cherry"></div>
+  </div>
 
-<div id="announcementBanner" class="announcement-banner"></div>
+  <div id="announcementBanner" class="announcement-banner"></div>
 
-<section id="demoScreen" class="demo-screen">
-  <div class="demo-card">
-    <h2>Оплата проезда</h2>
-    <p id="accessText">Загрузка данных...</p>
-    
-    <button id="payButton" class="pay-btn locked">⏳ Ожидание...</button>
-    <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
-    
-    <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px; display: none;">🎟️ У меня нету кода (Купить)</button>
-    
-    <div id="hackerTerminal" class="hacker-terminal"></div>
+  <section id="demoScreen" class="demo-screen">
+    <div class="demo-card">
+      <h2>Оплата проезда</h2>
+      <p id="accessText">Загрузка данных...</p>
+      
+      <button id="payButton" class="pay-btn locked">⏳ Ожидание...</button>
+      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
+      
+      <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px; display: none;">🎟️ У меня нету кода (Купить)</button>
+      
+      <div id="hackerTerminal" class="hacker-terminal"></div>
 
-    <div id="progressWrap" class="progress-wrap hidden" style="margin-top: 20px;">
-      <div class="progress-track" style="height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden;"><div id="progressBar" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.08s linear;"></div></div>
-      <div id="progressText" class="progress-text" style="margin-top: 10px; font-size: 15px; color: var(--text-muted);">Подготовка…</div>
+      <div id="progressWrap" class="progress-wrap hidden" style="margin-top: 20px;">
+        <div class="progress-track" style="height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden;"><div id="progressBar" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.08s linear;"></div></div>
+        <div id="progressText" class="progress-text" style="margin-top: 10px; font-size: 15px; color: var(--text-muted);">Подготовка…</div>
+      </div>
+      <div style="margin-top: 20px;"><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
     </div>
-    <div style="margin-top: 20px;"><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
-  </div>
-</section>
+  </section>
 
-<section id="resultScreen" class="demo-screen result-screen hidden">
-  <div class="demo-card">
-    <div class="result-title">Процесс<br>выполнен</div>
-    <div class="result-subtitle">Переход к выбору транспорта…</div>
-  </div>
-</section>
-
-<section id="selectorScreen" class="selector-screen hidden">
-  <div class="selector-card">
-    <h2>Выберите транспорт</h2>
-    <p>Сначала выберите тип, затем маршрут</p>
-    <div class="type-buttons">
-      <button class="type-btn" data-type="bus">Автобус</button>
-      <button class="type-btn" data-type="trolleybus">Троллейбус</button>
+  <section id="resultScreen" class="demo-screen result-screen hidden">
+    <div class="demo-card">
+      <div class="result-title">Процесс<br>выполнен</div>
+      <div class="result-subtitle">Переход к выбору транспорта…</div>
     </div>
-    <div id="routeButtons" class="route-buttons hidden"></div>
-    <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
-  </div>
-</section>
+  </section>
 
-<div id="mainPage" class="hidden">
-  <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
-  <main class="main-container">
-    <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
-    <div id="routeTitle" class="route-title">Автобус №18</div>
-    <div class="price" id="priceDisplay">53 ₽</div>
-    <div class="info-block"><span id="payDate">—</span><br>Т/С: <span id="vehicleNumber">—</span></div>
-    <div class="qr-container"><canvas id="qrCanvas" width="400" height="400"></canvas></div>
-    <div class="timer-container">Действителен: <span id="timer" class="timer-value">00:00</span></div>
-    
-    <button id="historyBtn" class="history-btn">📜 История поездок</button>
-    <button id="openGarageModalBtn" class="garage-link">Спросили т/с?</button>
-    <button id="inspectorBtn" class="inspector-btn">🚨 Вызвать контролёра</button>
-    <div><button id="devTriggerMain" class="dev-trigger">Написать разработчику</button></div>
-  </main>
-</div>
-
-<div id="garageModal" class="modal-overlay">
-  <div class="modal-card"><h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p><input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 3818" maxlength="5"><div id="modalGarageError" class="modal-error"></div><div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div></div>
-</div>
-
-<div id="inviteModal" class="modal-overlay">
-  <div class="modal-card"><h3>🎟️ Доступ по инвайту</h3><p>Введите код <b>FARE-XXXX-XXXX</b>.</p><input id="inviteInput" class="modal-input" type="text" placeholder="FARE-XXXX-XXXX" style="text-transform: uppercase;"><div id="inviteError" class="modal-error"></div><div class="modal-actions"><button class="modal-btn cancel" onclick="closeInviteModal()">Отмена</button><button class="modal-btn save" onclick="checkInviteCode()">Проверить</button></div></div>
-</div>
-
-<div id="historyModal" class="modal-overlay">
-  <div class="modal-card">
-    <h3>📜 История поездок</h3>
-    <div id="historyList" class="history-list"></div>
-    <div class="modal-actions" style="margin-top: 15px;"><button class="modal-btn cancel" style="width: 100%;" onclick="document.getElementById('historyModal').classList.remove('open')">Закрыть</button></div>
-  </div>
-</div>
-
-<div id="devModal" class="modal-overlay">
-  <div class="dev-modal-card">
-    <div class="dev-modal-header"><div class="dev-avatar">DV</div><div><h3>Написать разработчику</h3><div class="dev-username">@Demon_of_latvia</div></div></div>
-    <p class="dev-modal-sub">Выберите тему — появится подсказка, а текст скопируется.</p>
-    <div id="devReasons" class="dev-reasons">
-      <button class="dev-reason" data-problem="Не работает на iPhone" data-answer="Только разработчик может помочь."><span class="dev-reason-ico">1</span><span>Не работает на iPhone</span></button>
-      <button class="dev-reason" data-problem="Где найти Т/С" data-answer="На QR-коде в салоне."><span class="dev-reason-ico">2</span><span>Где найти Т/С</span></button>
-      <button class="dev-reason" data-problem="Вопросы по коду" data-answer="Опишите в Telegram."><span class="dev-reason-ico">3</span><span>Вопросы по коду</span></button>
+  <section id="selectorScreen" class="selector-screen hidden">
+    <div class="selector-card">
+      <h2>Выберите транспорт</h2>
+      <p>Сначала выберите тип, затем маршрут</p>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="bus">Автобус</button>
+        <button class="type-btn" data-type="trolleybus">Троллейбус</button>
+      </div>
+      <div id="routeButtons" class="route-buttons hidden"></div>
+      <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
     </div>
-    <div id="devAnswer" class="dev-answer"></div><div id="devCopyNote" class="dev-copy-note">Текст скопирован</div>
-    <div class="dev-actions"><button id="devCancelBtn" class="modal-btn cancel">Закрыть</button><button id="devTelegramBtn" class="modal-btn telegram" disabled>В Telegram</button></div>
-  </div>
-</div>
+  </section>
 
-<div id="inspectorModal" class="inspector-modal-overlay">
-  <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-  
+  <div id="mainPage" class="hidden">
+    <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
+    <main class="main-container">
+      <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
+      <div id="routeTitle" class="route-title">Автобус №18</div>
+      <div class="price" id="priceDisplay">53 ₽</div>
+      <div class="info-block"><span id="payDate">—</span><br>Т/С: <span id="vehicleNumber">—</span></div>
+      <div class="qr-container"><canvas id="qrCanvas" width="400" height="400"></canvas></div>
+      <div class="timer-container">Действителен: <span id="timer" class="timer-value">00:00</span></div>
+      
+      <button id="historyBtn" class="history-btn">📜 История поездок</button>
+      <button id="openGarageModalBtn" class="garage-link">Спросили т/с?</button>
+      <button id="inspectorBtn" class="inspector-btn">🚨 Вызвать контролёра</button>
+      <div><button id="devTriggerMain" class="dev-trigger">Написать разработчику</button></div>
+    </main>
+  </div>
+
+  <div id="garageModal" class="modal-overlay">
+    <div class="modal-card"><h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p><input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 3818" maxlength="5"><div id="modalGarageError" class="modal-error"></div><div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div></div>
+  </div>
+
+  <div id="inviteModal" class="modal-overlay">
+    <div class="modal-card"><h3>🎟️ Доступ по инвайту</h3><p>Введите код <b>FARE-XXXX-XXXX</b>.</p><input id="inviteInput" class="modal-input" type="text" placeholder="FARE-XXXX-XXXX" style="text-transform: uppercase;"><div id="inviteError" class="modal-error"></div><div class="modal-actions"><button class="modal-btn cancel" onclick="closeInviteModal()">Отмена</button><button class="modal-btn save" onclick="checkInviteCode()">Проверить</button></div></div>
+  </div>
+
+  <div id="historyModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>📜 История поездок</h3>
+      <div id="historyList" class="history-list"></div>
+      <div class="modal-actions" style="margin-top: 15px;"><button class="modal-btn cancel" style="width: 100%;" onclick="document.getElementById('historyModal').classList.remove('open')">Закрыть</button></div>
+    </div>
+  </div>
+
+  <div id="devModal" class="modal-overlay">
+    <div class="dev-modal-card">
+      <div class="dev-modal-header"><div class="dev-avatar">DV</div><div><h3>Написать разработчику</h3><div class="dev-username">@Demon_of_latvia</div></div></div>
+      <p class="dev-modal-sub">Выберите тему — появится подсказка, а текст скопируется.</p>
+      <div id="devReasons" class="dev-reasons">
+        <button class="dev-reason" data-problem="Не работает на iPhone" data-answer="Только разработчик может помочь."><span class="dev-reason-ico">1</span><span>Не работает на iPhone</span></button>
+        <button class="dev-reason" data-problem="Где найти Т/С" data-answer="На QR-коде в салоне."><span class="dev-reason-ico">2</span><span>Где найти Т/С</span></button>
+        <button class="dev-reason" data-problem="Вопросы по коду" data-answer="Опишите в Telegram."><span class="dev-reason-ico">3</span><span>Вопросы по коду</span></button>
+      </div>
+      <div id="devAnswer" class="dev-answer"></div><div id="devCopyNote" class="dev-copy-note">Текст скопирован</div>
+      <div class="dev-actions"><button id="devCancelBtn" class="modal-btn cancel">Закрыть</button><button id="devTelegramBtn" class="modal-btn telegram" disabled>В Telegram</button></div>
+    </div>
+  </div>
+
+  <div id="inspectorModal" class="inspector-modal-overlay">
+    <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
+  </div>
+  <script>
+document.addEventListener
