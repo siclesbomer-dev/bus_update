@@ -11,12 +11,10 @@
   body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
   .admin-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 20px; }
   
-  /* Навигация */
   .tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
   .tab-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 107, 0, 0.4); }
   
-  /* Контент */
   .tab-content { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
   .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -24,13 +22,11 @@
   h2 { color: var(--accent); margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; }
   h3 { font-size: 16px; color: #ccc; margin-bottom: 12px; }
   
-  /* Формы */
   .form-group { margin-bottom: 15px; }
   .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   input[type="text"], input[type="number"], textarea, select { width: 100%; background: var(--bg); color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 10px; outline: none; font-size: 15px; transition: 0.2s; }
   input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   
-  /* Кнопки */
   .btn { background: var(--accent); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
   .btn:hover { background: #e65c00; transform: translateY(-1px); }
   .btn-green { background: var(--green); color: #000; } .btn-green:hover { background: #00cc55; }
@@ -38,19 +34,16 @@
   .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
   .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* Списки */
   .list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
   .list-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 14px; }
   .list-item .actions { display: flex; gap: 5px; }
   .list-item .actions button { padding: 6px 10px; font-size: 12px; border-radius: 6px; }
   
-  /* Переключатели */
   .switch-group { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
   .switch-group span { font-weight: 600; font-size: 14px; }
   .switch-group small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 4px; }
   input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
   
-  /* Генератор */
   .output-box { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 20px; }
   textarea.code-output { height: 200px; background: #000; color: var(--green); font-family: monospace; font-size: 13px; border: 1px solid var(--green); }
 </style>
@@ -64,9 +57,7 @@
     <button class="tab-btn" onclick="switchTab('content')">📝 Контент</button>
     <button class="tab-btn" onclick="switchTab('visual')">🎨 Визуал</button>
   </div>
-
-  <!-- ВКЛАДКА 1: КОДЫ -->
-  <div id="tab-codes" class="tab-content active">
+    <div id="tab-codes" class="tab-content active">
     <h2>Управление доступом</h2>
     
     <h3>🎟️ Действующие инвайты</h3>
@@ -85,13 +76,12 @@
     <div id="bannedList" class="list"></div>
   </div>
 
-  <!-- ВКЛАДКА 2: НАСТРОЙКИ -->
   <div id="tab-config" class="tab-content">
     <h2>Глобальные настройки</h2>
     
     <div class="switch-group">
       <div><span>Kill Switch (Тех. работы)</span><small>Полностью отключает приложение</small></div>
-      <input type="checkbox" id="appEnabled" onchange="updateJson()">
+      <input type="checkbox" id="appEnabled" onchange="updateJson()" checked>
     </div>
     <div class="switch-group">
       <div><span>Глобальный God Mode</span><small>Отключает кулдаун у всех пользователей</small></div>
@@ -118,7 +108,6 @@
     </div>
   </div>
 
-  <!-- ВКЛАДКА 3: КОНТЕНТ -->
   <div id="tab-content" class="tab-content">
     <h2>Текстовый контент</h2>
     
@@ -137,7 +126,6 @@
     <div id="busList" class="list"></div>
   </div>
 
-  <!-- ВКЛАДКА 4: ВИЗУАЛ -->
   <div id="tab-visual" class="tab-content">
     <h2>Настройки дизайна</h2>
     
@@ -158,15 +146,15 @@
     </div>
   </div>
 
-  <!-- БЛОК ГЕНЕРАЦИИ JSON -->
   <div class="output-box">
     <h3>💾 Экспорт данных (config.json)</h3>
     <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">Скопируй этот текст и вставь в свой Gist (config.json) вместо старого.</p>
     <textarea class="code-output" id="jsonOutput" readonly></textarea>
     <button class="btn btn-green" style="width:100%; margin-top:15px; padding:15px;" onclick="copyJSON()">📋 Скопировать весь JSON</button>
   </div>
-  <script>
-  // Хранилище данных в админке
+
+</div>
+<script>
   let adminData = {
     app_enabled: true,
     global_god_mode: false,
@@ -178,54 +166,38 @@
     bg_image_url: "",
     promo_code: "",
     promo_discount: 0,
-    valid_codes: [
-      "FARE-8OKF-N8NB", 
-      "FARE-8FMJ-S4R9"
-    ],
-    banned_codes: [
-      "FARE-BADCODE-111"
-    ],
-    inspector_phrases: [
-      "Ну что, заяц, прыгай в норку — за неоплаченный проезд! 🐰",
-      "Так-так, а билетик-то где? Показываем!",
-      "Ой, а оплата где? Платим или высаживаем!"
-    ],
+    valid_codes: ["FARE-8OKF-N8NB", "FARE-8FMJ-S4R9"],
+    banned_codes: ["FARE-BADCODE-111"],
+    inspector_phrases: ["Ну что, заяц, прыгай в норку — за неоплаченный проезд! 🐰", "Так-так, а билетик-то где? Показываем!"],
     bus_routes: ["18", "1", "10", "27", "5"]
   };
 
-  // Переключение вкладок
   function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
     event.target.classList.add('active');
     document.getElementById('tab-' + tabId).classList.add('active');
   }
 
-  // Отрисовка списков
   function renderAll() {
-    // Коды
     const vList = document.getElementById('validList');
     vList.innerHTML = '';
     adminData.valid_codes.forEach((code, i) => {
       vList.innerHTML += `<div class="list-item"><span>${code}</span><div class="actions"><button class="btn btn-red" onclick="removeCode(${i})">Удалить</button></div></div>`;
     });
 
-    // Баны
     const bList = document.getElementById('bannedList');
     bList.innerHTML = '';
     adminData.banned_codes.forEach((code, i) => {
       bList.innerHTML += `<div class="list-item" style="color:#ff3333; border-color:#ff3333;"><span>${code}</span><div class="actions"><button class="btn btn-green" onclick="unbanCode(${i})">Разбан</button></div></div>`;
     });
 
-    // Фразы
     const pList = document.getElementById('phrasesList');
     pList.innerHTML = '';
     adminData.inspector_phrases.forEach((phrase, i) => {
       pList.innerHTML += `<div class="list-item" style="font-family: 'Inter', sans-serif;"><span>${phrase}</span><div class="actions"><button class="btn btn-red" onclick="removePhrase(${i})">Удалить</button></div></div>`;
     });
 
-    // Маршруты
     const busList = document.getElementById('busList');
     busList.innerHTML = '';
     adminData.bus_routes.forEach((bus, i) => {
@@ -235,7 +207,6 @@
     updateJson();
   }
 
-  // Обновление JSON в реальном времени
   function updateJson() {
     adminData.app_enabled = document.getElementById('appEnabled').checked;
     adminData.global_god_mode = document.getElementById('globalGodMode').checked;
@@ -251,14 +222,9 @@
     document.getElementById('jsonOutput').value = JSON.stringify(adminData, null, 2);
   }
 
-  // --- ДЕЙСТВИЯ С КОДАМИ ---
   function addCode() {
     const val = document.getElementById('newCode').value.trim().toUpperCase();
-    if (val && !adminData.valid_codes.includes(val)) {
-      adminData.valid_codes.push(val);
-      document.getElementById('newCode').value = '';
-      renderAll();
-    }
+    if (val && !adminData.valid_codes.includes(val)) { adminData.valid_codes.push(val); document.getElementById('newCode').value = ''; renderAll(); }
   }
   function removeCode(i) { adminData.valid_codes.splice(i, 1); renderAll(); }
   
@@ -267,25 +233,22 @@
     if (val && !adminData.banned_codes.includes(val)) {
       adminData.banned_codes.push(val);
       adminData.valid_codes = adminData.valid_codes.filter(c => c !== val);
-      document.getElementById('banCode').value = '';
-      renderAll();
+      document.getElementById('banCode').value = ''; renderAll();
     }
   }
   function unbanCode(i) { adminData.banned_codes.splice(i, 1); renderAll(); }
 
-  // --- ГЕНЕРАТОР КОДОВ ---
   function generateCodes() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     for (let j = 0; j < 10; j++) {
-      let part1 = "", part2 = "";
-      for (let i = 0; i < 4; i++) { part1 += chars[Math.floor(Math.random() * chars.length)]; }
-      for (let i = 0; i < 4; i++) { part2 += chars[Math.floor(Math.random() * chars.length)]; }
-      adminData.valid_codes.push(`FARE-${part1}-${part2}`);
+      let p1 = "", p2 = "";
+      for (let i = 0; i < 4; i++) p1 += chars[Math.floor(Math.random() * chars.length)];
+      for (let i = 0; i < 4; i++) p2 += chars[Math.floor(Math.random() * chars.length)];
+      adminData.valid_codes.push(`FARE-${p1}-${p2}`);
     }
     renderAll();
   }
 
-  // --- ДЕЙСТВИЯ С КОНТЕНТОМ ---
   function addPhrase() {
     const val = document.getElementById('newPhrase').value.trim();
     if (val) { adminData.inspector_phrases.push(val); document.getElementById('newPhrase').value = ''; renderAll(); }
@@ -298,7 +261,6 @@
   }
   function removeBus(i) { adminData.bus_routes.splice(i, 1); renderAll(); }
 
-  // --- КОПИРОВАНИЕ ---
   function copyJSON() {
     const ta = document.getElementById('jsonOutput');
     ta.select();
@@ -306,7 +268,6 @@
     alert('✅ JSON скопирован! Вставь его в свой Gist.');
   }
 
-  // Запуск
   renderAll();
 </script>
 </body>
