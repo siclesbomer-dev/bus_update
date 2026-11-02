@@ -161,12 +161,12 @@
   <section id="demoScreen" class="demo-screen">
     <div class="demo-card">
       <h2>Оплата проезда</h2>
-      <p id="accessText">Загрузка данных...</p>
+      <p id="accessText">Для доступа к оплате требуется инвайт-код.</p>
       
-      <button id="payButton" class="pay-btn locked">⏳ Ожидание...</button>
+      <button id="payButton" class="pay-btn locked">🔒 Введите инвайт-код</button>
       <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
       
-      <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px; display: none;">🎟️ У меня нету кода (Купить)</button>
+      <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px;">🎟️ У меня нету кода (Купить)</button>
       
       <div id="hackerTerminal" class="hacker-terminal"></div>
 
@@ -248,12 +248,14 @@
   <div id="inspectorModal" class="inspector-modal-overlay">
     <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
   </div>
-  <script>
+
+<script>
 document.addEventListener('DOMContentLoaded', () => {
   
-  // ССЫЛКА НА ТВОЙ GIST (Специальная ссылка, которая всегда читает последнюю версию)
+  // ССЫЛКА НА ТВОЙ GIST (АВТОМАТИЧЕСКИ ЧИТАЕТ ПОСЛЕДНЮЮ ВЕРСИЮ)
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
 
+  // Базовый конфиг, пока не загрузился новый
   let config = {
     app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
     price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
@@ -263,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
   const COOLDOWN_MS = 5 * 60 * 1000;
 
-  // 1. СРАЗУ ОТРИСОВЫВАЕМ ИНТЕРФЕЙС (чтобы не висело "Ожидание")
+  // 1. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА (БЕЗ ОЖИДАНИЯ СЕТИ)
   function updateUI() {
     const payBtn = document.getElementById('payButton');
     const accessText = document.getElementById('accessText');
@@ -299,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 2. ОТРИСОВКА МАРШРУТОВ ИЗ GIST
+  // 2. ОТРИСОВКА МАРШРУТОВ
   function renderRoutes() {
     const routeButtons = document.getElementById('routeButtons');
     const typeButtons = document.querySelectorAll('.type-btn');
@@ -343,14 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // СРАЗУ ПОКАЗЫВАЕМ КНОПКИ
   updateUI();
   renderRoutes();
 
-  // 3. ЗАГРУЗКА НАСТРОЕК ИЗ ИНТЕРНЕТА
-  async function loadRemoteConfig() {
-    try {
-      const res = await fetch(CONFIG_URL + '?t=' + Date.now());
-      const data = await res.json();
+  // 3. ЗАГРУЗКА НАСТРОЕК С GITHUB (В ФОНЕ)
+  fetch(CONFIG_URL + '?t=' + Date.now())
+    .then(res => res.json())
+    .then(data => {
       config = { ...config, ...data };
       
       if (config.app_enabled === false) { document.getElementById('maintenanceScreen').classList.add('show'); return; }
@@ -374,14 +376,11 @@ document.addEventListener('DOMContentLoaded', () => {
       else { isPremium = false; }
 
       updateUI();
-      renderRoutes(); // Перерисовываем маршруты с новыми данными
+      renderRoutes();
+    })
+    .catch(e => console.log("Ошибка загрузки Gist:", e));
 
-    } catch (e) {
-      console.log("Ошибка сети, используем стандартные настройки", e);
-    }
-  }
-
-  loadRemoteConfig();
+  // Интервал для обновления кулдауна
   setInterval(updateUI, 1000);
 
   // СНЕГ
