@@ -70,13 +70,17 @@
   .selector-card h2, .demo-card h2, .board-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
   .selector-card p, .demo-card p, .board-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
   
-  .stop-list { display: flex; flex-direction: column; gap: 10px; }
+  .stop-list { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;}
   .stop-card { background: var(--bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 20px; cursor: pointer; text-align: left; font-size: 17px; font-weight: 600; color: var(--text-main); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
   .stop-card:hover { border-color: var(--accent); transform: scale(1.01); }
+
+  /* РАЙОНЫ */
+  .district-title { font-size: 16px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin: 25px 0 10px 0; text-align: left; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+  .district-title:first-child { margin-top: 0; }
   
   .hidden { display: none !important; }
   
-  /* МОДАЛКИ И ОСТАЛЬНОЕ */
+  /* МОДАЛКИ */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
   .modal-overlay.open { display: flex; }
   .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
@@ -281,12 +285,42 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const CONFIG_URL = 'https://gist.githubusercontent.com/siclesbomer-dev/2c2eb75c9dd5eb74a0a9af3698ae7b19/raw/config.json';
 
+  // ЖЕСТКО ЗАШИТЫЕ ДАННЫЕ (ПО РАЙОНАМ)
   let config = {
     app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
     price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
     valid_codes: [], banned_codes: [], inspector_phrases: ["Ну что, заяц! 🐰"], 
-    bus_routes: ["18", "1", "10"], 
-    stops: ["Улица Ленина", "Площадь Пять Углов"]
+    bus_routes: ["18", "1", "10"],
+    stops_by_district: {
+      "Первомайский": [
+        "Улица Фадеев Ручей", "Бондарная улица", "Улица Достоевского", "Улица Бочкова", 
+        "Улица Беринга", "Кооперативная улица", "Молодёжный проезд", "Ледовое озеро", 
+        "Морская улица", "Долина Уюта"
+      ],
+      "Октябрьский": [
+        "Проспект Ленина", "Улица Полярные Зори", "Площадь Пять Углов", "Улица Генерала Журбы", 
+        "Улица Академика Книповича", "Улица Капитана Егорова", "Улица Софьи Перовской", 
+        "Улица Карла Маркса", "Кинотеатр «Мурманск»", "Улица Капитана Маклакова", "Почта", 
+        "Улица Скальная", "Музыкальная школа", "Универсам", "Улица Мира", "Улица Старостина", 
+        "Дом престарелых", "Кильдинская улица", "Семёновское озеро", "Улица Юрия Гагарина", 
+        "Улица 6-й Комсомольской Батареи", "Улица Чумбарова-Лучинского", "Школа № 45", 
+        "Улица Аскольдовцев", "Комбинат питания", "Улица Саши Ковалёва", "7-й микрорайон", 
+        "Улица Зои Космодемьянской", "Улица Ломоносова", "Лыжный проезд", "Кольский проспект", 
+        "Улица Карла Либкнехта", "Улица Челюскинцев", "Проспект Героев-Североморцев", 
+        "Улица Адмирала Флота Лобова"
+      ],
+      "Ленинский": [
+        "Проезд Михаила Ивченко", "Улица Алексея Хлобыстова", "Больница", "Улица Ушакова", 
+        "Улица Нахимова", "Улица Семёна Дежнёва", "Завод Севморпуть", "Героев Рыбачьего", 
+        "Улица Капитана Копытова", "Первомайская улица", "Улица Шевченко", "Якорный переулок", 
+        "Автопарк", "Гвардейская улица", "Улица Папанина", "Улица Буркова", "Проезд Капитана Тарана", 
+        "Улица Крупской", "Верхне-Ростинское шоссе", "Проезд Металлистов", "Улица Свердлова", 
+        "Улица Павлика Морозова", "Улица Подстаницкого", "ДСК", "Торговые базы", "Деловой центр", 
+        "Промышленная улица", "Мясокомбинат", "Комбинат хлебопродуктов", "Металлобаза", 
+        "Улица Фрунзе", "Улица Декабристов", "Улица Марата", "ГТС", "Проспект Кирова", 
+        "Областная больница", "Улица Академика Павлова", "Улица Радищева", "Рогозерская улица"
+      ]
+    }
   };
 
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
@@ -332,18 +366,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const stopsList = document.getElementById('stopsList');
     stopsList.innerHTML = '';
     
-    let stops = config.stops || ["Улица Ленина", "Площадь Пять Углов"];
+    // Строго берем только районы. Если в Gist нет районов, код использует зашитые выше.
+    let districts = config.stops_by_district;
     
-    stops.forEach(stop => {
-      const card = document.createElement('div');
-      card.className = 'stop-card';
-      card.innerHTML = `<span>${stop}</span> <span>→</span>`;
-      card.onclick = () => showStopBoard(stop);
-      stopsList.appendChild(card);
-    });
+    if (districts) {
+      for (const [district, stops] of Object.entries(districts)) {
+        if (!stops || stops.length === 0) continue;
+        
+        const title = document.createElement('div');
+        title.className = 'district-title';
+        title.textContent = district + ' район';
+        stopsList.appendChild(title);
+
+        stops.forEach(stop => {
+          const card = document.createElement('div');
+          card.className = 'stop-card';
+          card.innerHTML = `<span>${stop}</span> <span>→</span>`;
+          card.onclick = () => showStopBoard(stop);
+          stopsList.appendChild(card);
+        });
+      }
+    }
   }
 
-  // ФУНКЦИЯ ГЕНЕРАЦИИ ТАБЛО (БЕЗ API)
   function showStopBoard(stopName) {
     document.getElementById('stopsScreen').classList.add('hidden');
     document.getElementById('liveBoardScreen').classList.remove('hidden');
@@ -357,7 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       busList.innerHTML = '';
-      
       let routes = config.bus_routes || ["18", "1", "10"];
       
       if (routes.length === 0) {
@@ -367,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       routes.forEach(routeNum => {
           const typeName = 'Автобус';
-          let etaMinutes = Math.floor(Math.random() * 14) + 2; // От 2 до 15 минут
+          let etaMinutes = Math.floor(Math.random() * 14) + 2;
 
           const card = document.createElement('div');
           card.className = 'bus-card';
@@ -383,10 +427,8 @@ document.addEventListener('DOMContentLoaded', () => {
           card.onclick = () => {
               document.getElementById('liveBoardScreen').classList.add('hidden');
               document.getElementById('mainPage').classList.remove('hidden');
-              
               document.getElementById('routeTitle').textContent = `${typeName} №${routeNum}`;
               document.getElementById('vehicleNumber').textContent = '—'; 
-              
               saveTrip(`${typeName} №${routeNum}`, config.price, '—');
               drawQR(); 
               startTimer();
@@ -407,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           busIntervals.push(interval);
       });
-    }, 300); // Небольшая задержка для плавности
+    }, 300);
   }
 
   updateUI();
@@ -415,7 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch(CONFIG_URL + '?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
+      // Если в Gist есть stops_by_district, он их подхватит. Если нет, останутся зашитые.
       config = { ...config, ...data };
+      
       if (config.app_enabled === false) { document.getElementById('maintenanceScreen').classList.add('show'); return; }
       if (config.announcement) { document.getElementById('announcementBanner').textContent = config.announcement; document.getElementById('announcementBanner').classList.add('show'); }
       if (config.favicon_url) { let l = document.querySelector("link[rel~='icon']") || document.createElement('link'); l.rel='icon'; l.href=config.favicon_url; document.head.appendChild(l); }
@@ -437,7 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updateUI();
       renderStops();
     })
-    .catch(e => console.log("Ошибка загрузки Gist:", e));
+    .catch(e => {
+      console.log("Ошибка Gist, используем локальные данные:", e);
+      // Если Gist упал, мы все равно рендерим остановки из зашитых данных!
+      renderStops();
+    });
 
   setInterval(updateUI, 1000);
 
