@@ -91,13 +91,23 @@
   .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
   .modal-card h3 { margin: 0 0 12px; font-size: 22px; color: var(--text-main); }
   .modal-card p { margin: 0 0 20px; font-size: 15px; color: var(--text-muted); }
-  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px; outline: none; margin-bottom: 16px; letter-spacing: 1px; text-align: center; background: var(--input-bg); color: var(--text-main); }
+  
+  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px; outline: none; margin-bottom: 12px; letter-spacing: 1px; text-align: center; background: var(--input-bg); color: var(--text-main); }
   .modal-input:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 12px; }
+  
+  .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
   .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; }
   .modal-btn.cancel { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
   .modal-btn.save { background: var(--btn-gradient); color: #fff; }
   .modal-error { color: #ff4d4d; font-size: 14px; margin-bottom: 12px; min-height: 18px; font-weight: 600; }
+
+  /* СЕТКА МАРШРУТОВ */
+  .transport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; margin-top: 15px; }
+  .transport-col { display: flex; flex-direction: column; gap: 8px; }
+  .transport-col h4 { margin: 0 0 5px 0; font-size: 16px; color: var(--text-main); text-align: center; }
+  .route-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+  .route-btn:hover, .route-btn:active { background: var(--btn-gradient); color: #fff; border-color: transparent; transform: scale(0.97); }
+
   .garage-link { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
 
   .dev-trigger { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
@@ -218,6 +228,40 @@
     </div>
   </section>
 
+  <!-- ЭКРАН РУЧНОГО ВЫБОРА ТРАНСПОРТА -->
+  <section id="manualScreen" class="board-screen hidden">
+    <div class="board-card">
+      <h2 style="margin-bottom: 10px;">Выберите транспорт</h2>
+      <p style="font-size: 15px; margin-bottom: 15px;">Сначала выберите тип и номер маршрута</p>
+
+      <div class="transport-grid">
+        <!-- Автобусы -->
+        <div class="transport-col">
+          <h4>🚌 Автобус</h4>
+          <button class="route-btn" onclick="selectRoute('Автобус', '1')">№1</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '5')">№5</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '10')">№10</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '11')">№11</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '18')">№18</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '27')">№27</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '29')">№29</button>
+          <button class="route-btn" onclick="selectRoute('Автобус', '30')">№30</button>
+        </div>
+        <!-- Троллейбусы -->
+        <div class="transport-col">
+          <h4>🚎 Троллейбус</h4>
+          <button class="route-btn" onclick="selectRoute('Троллейбус', '3')">№3</button>
+          <button class="route-btn" onclick="selectRoute('Троллейбус', '4')">№4</button>
+          <button class="route-btn" onclick="selectRoute('Троллейбус', '6')">№6</button>
+          <button class="route-btn" onclick="selectRoute('Троллейбус', '10')">№10</button>
+        </div>
+      </div>
+
+      <button class="garage-link" onclick="cancelManual()">← Отмена</button>
+    </div>
+  </section>
+
+  <!-- ЭКРАН БИЛЕТА -->
   <div id="mainPage" class="hidden">
     <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
     <main class="main-container">
@@ -235,8 +279,18 @@
     </main>
   </div>
 
+  <!-- МОДАЛКА ВВОДА Т/С -->
   <div id="garageModal" class="modal-overlay">
-    <div class="modal-card"><h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p><input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 3818" maxlength="5"><div id="modalGarageError" class="modal-error"></div><div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div></div>
+    <div class="modal-card">
+      <h3>Введите номер Т/С</h3>
+      <p>Укажите номер с таблички в салоне</p>
+      <input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 1158" maxlength="5">
+      <div id="modalGarageError" class="modal-error"></div>
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="modal-btn cancel">Отмена</button>
+        <button id="modalSaveBtn" class="modal-btn save">Сохранить</button>
+      </div>
+    </div>
   </div>
 
   <div id="inviteModal" class="modal-overlay">
@@ -285,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const COOLDOWN_MS = 5 * 60 * 1000;
   
   let html5QrCode = null;
+  let pendingRouteStr = ""; // Временное хранение выбранного маршрута
 
   function updateUI() {
     const payBtn = document.getElementById('payButton');
@@ -323,6 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startScanner() {
     document.getElementById('demoScreen').style.display = 'none';
+    document.getElementById('manualScreen').classList.add('hidden');
+    document.getElementById('mainPage').classList.add('hidden');
     document.getElementById('scannerScreen').classList.remove('hidden');
     
     document.getElementById('startCameraBtn').style.display = 'inline-flex';
@@ -364,34 +421,28 @@ document.addEventListener('DOMContentLoaded', () => {
     stopScanner();
     
     document.getElementById('scannerScreen').classList.add('hidden');
-    document.getElementById('mainPage').classList.remove('hidden');
     
-    const routeEl = document.getElementById('routeTitle');
-    const vehicleEl = document.getElementById('vehicleNumber');
-
-    // --- 1. ОБРАБОТКА СБП КОДОВ ---
+    // Если СБП-код
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         try {
             const url = new URL(decodedText);
             const paytagId = url.searchParams.get("paytagid");
             if (!paytagId) throw new Error("Нет paytagid в ссылке");
 
-            routeEl.textContent = "Считываем данные...";
-            vehicleEl.textContent = "Ожидайте";
-
-            // Сначала проверяем Умный Кэш
+            // Умный кэш
             const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
             if (savedTags[paytagId]) {
-                // Нашли в кэше! Выдаем моментально
-                routeEl.textContent = savedTags[paytagId].route;
-                vehicleEl.textContent = savedTags[paytagId].ts;
+                // Нашли в кэше! Моментально выдаем билет
+                document.getElementById('mainPage').classList.remove('hidden');
+                document.getElementById('routeTitle').textContent = savedTags[paytagId].route;
+                document.getElementById('vehicleNumber').textContent = savedTags[paytagId].ts;
                 saveTrip(savedTags[paytagId].route, config.price, savedTags[paytagId].ts);
                 drawQR();
                 startTimer();
                 return;
             }
 
-            // Если в кэше нет, пробуем API
+            // Пробуем API
             const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
             const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
             
@@ -404,34 +455,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const trip = data.result[0];
-            const route = `${trip.vehicleTypeName} №${trip.routeNumber}`;
+            const route = `${trip.vehicleTypeName} ${trip.routeNumber}`; // Формат "Автобус 10"
             const tsNumber = trip.vehicleNumber;
 
-            routeEl.textContent = route;
-            vehicleEl.textContent = tsNumber;
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('routeTitle').textContent = route;
+            document.getElementById('vehicleNumber').textContent = tsNumber;
+            
             saveTrip(route, config.price, tsNumber);
             drawQR();
             startTimer();
 
         } catch (error) {
             console.error("Ошибка API НСПК:", error);
-            // API упало или заблокировано. Открываем ручной ввод.
-            routeEl.textContent = "Неизвестный маршрут";
-            vehicleEl.textContent = "—";
-            
-            setTimeout(() => {
-                document.getElementById('openGarageModalBtn').click();
-                document.getElementById('modalGarageInput').placeholder = "Введите Т/С (например: 1158)";
-            }, 500);
-            
-            saveTrip(routeEl.textContent, config.price, "—");
-            drawQR();
-            startTimer();
+            // Если API не ответило, показываем экран ручного выбора транспорта
+            window.currentPaytagId = url.searchParams.get("paytagid");
+            document.getElementById('manualScreen').classList.remove('hidden');
         }
         return; 
     }
 
-    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
+    // --- ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
     let extractedTC = '—';
     let transportName = 'Автобус';
     let routeNumber = '';
@@ -451,18 +495,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (possibleRoute && possibleRoute[0] !== extractedTC) routeNumber = possibleRoute[0];
     }
 
-    if (routeNumber) {
-        routeEl.textContent = `${transportName} №${routeNumber}`;
-    } else {
-        routeEl.textContent = transportName;
-    }
+    const route = routeNumber ? `${transportName} ${routeNumber}` : transportName;
     
-    vehicleEl.textContent = extractedTC;
+    document.getElementById('mainPage').classList.remove('hidden');
+    document.getElementById('routeTitle').textContent = route;
+    document.getElementById('vehicleNumber').textContent = extractedTC;
     
-    saveTrip(routeEl.textContent, config.price, extractedTC);
+    saveTrip(route, config.price, extractedTC);
     drawQR(); 
     startTimer();
   }
+
+  // --- ЛОГИКА РУЧНОГО ВЫБОРА ---
+  window.selectRoute = function(type, num) {
+    pendingRouteStr = `${type} ${num}`; // Формат "Автобус 10"
+    document.getElementById('manualScreen').classList.add('hidden');
+    
+    // Открываем модалку для ввода Т/С
+    document.getElementById('modalGarageInput').value = '';
+    document.getElementById('modalGarageError').textContent = '';
+    document.getElementById('garageModal').classList.add('open');
+    document.getElementById('modalGarageInput').focus();
+  };
+
+  window.cancelManual = function() {
+    document.getElementById('manualScreen').classList.add('hidden');
+    document.getElementById('demoScreen').style.display = 'flex';
+    updateUI();
+  };
 
   // --- ОСТАЛЬНАЯ ЛОГИКА ---
   updateUI();
@@ -576,27 +636,68 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalCancelBtn = document.getElementById('modalCancelBtn');
   const modalSaveBtn = document.getElementById('modalSaveBtn');
   const vehicleNumber = document.getElementById('vehicleNumber');
+  const routeTitle = document.getElementById('routeTitle');
 
   openGarageModalBtn.addEventListener('click', () => {
-    garageModal.classList.add('open'); modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : ''; modalGarageInput.focus(); modalGarageError.textContent = '';
+    garageModal.classList.add('open'); 
+    modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
+    modalGarageInput.focus(); 
+    modalGarageError.textContent = '';
   });
-  function closeModal() { garageModal.classList.remove('open'); modalGarageError.textContent = ''; }
-  modalCancelBtn.addEventListener('click', closeModal); garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
+  
+  function closeModal() { 
+    garageModal.classList.remove('open'); 
+    modalGarageError.textContent = ''; 
+    window.currentPaytagId = null; 
+  }
+  
+  modalCancelBtn.addEventListener('click', closeModal); 
+  garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
+  
   modalGarageInput.addEventListener('input', () => { modalGarageInput.value = modalGarageInput.value.replace(/\D/g, ''); modalGarageError.textContent = ''; });
+  
   modalSaveBtn.addEventListener('click', () => {
-    const val = modalGarageInput.value.trim(); if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
-    vehicleNumber.textContent = val; openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; 
+    const val = modalGarageInput.value.trim(); 
+    if (!/^\d{3,5}$/.test(val)) { 
+        modalGarageError.textContent = 'Т/С должен содержать от 3 до 5 цифр'; 
+        return; 
+    }
     
-    // СОХРАНЯЕМ В УМНЫЙ КЭШ
-    if (window.currentPaytagId) {
-        const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
-        const guessedRoute = document.getElementById('routeTitle').textContent;
-        savedTags[window.currentPaytagId] = {
-            route: guessedRoute !== "Неизвестный маршрут" ? guessedRoute : "Автобус/Троллейбус",
-            ts: val
-        };
-        localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
-        window.currentPaytagId = null;
+    // Если мы пришли из ручного выбора маршрута
+    if (pendingRouteStr) {
+        routeTitle.textContent = pendingRouteStr;
+        vehicleNumber.textContent = val;
+        
+        // Сохраняем в кэш
+        if (window.currentPaytagId) {
+            const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
+            savedTags[window.currentPaytagId] = {
+                route: pendingRouteStr,
+                ts: val
+            };
+            localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
+            window.currentPaytagId = null;
+        }
+        
+        saveTrip(pendingRouteStr, config.price, val);
+        drawQR();
+        startTimer();
+        
+        // Показываем билет
+        document.getElementById('mainPage').classList.remove('hidden');
+        pendingRouteStr = ""; // Сбрасываем
+        
+    } else {
+        // Если мы просто нажали "Спросили т/с?" на готовом билете
+        vehicleNumber.textContent = val; 
+        openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; 
+        
+        // Обновляем последнюю поездку в истории
+        const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
+        if (trips.length > 0) {
+            trips[trips.length - 1].vehicle = val;
+            localStorage.setItem('farepay_trips', JSON.stringify(trips));
+        }
     }
     
     closeModal();
