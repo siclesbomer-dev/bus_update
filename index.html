@@ -352,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
         html5QrCode = new Html5Qrcode("qr-reader");
     }
 
-    // Переименовал local config в scannerConfig, чтобы не перекрывать глобальный config
     const scannerConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
     html5QrCode.start({ facingMode: "environment" }, scannerConfig, onScanSuccess)
@@ -363,70 +362,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
   });
 
-  // Функция скачивания страницы НСПК через прокси
-  async function fetchNspkData(targetUrl) {
-      // Бесплатный CORS-прокси для обхода блокировки браузера
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Ошибка сети');
-      return await response.text();
-  }
-
   async function onScanSuccess(decodedText, decodedResult) {
-    // 1. Сразу выключаем камеру, чтобы не жрала ресурсы
     stopScanner();
     
-    // 2. Переключаем экран на билет, показываем загрузку
     document.getElementById('scannerScreen').classList.add('hidden');
     document.getElementById('mainPage').classList.remove('hidden');
     
-    // Временно ставим статус "Загрузка..."
     const routeEl = document.getElementById('routeTitle');
     const vehicleEl = document.getElementById('vehicleNumber');
-    routeEl.textContent = "Загрузка данных...";
-    vehicleEl.textContent = "Ожидайте";
 
-    // Если это СБП-код
+    // --- 1. ОБРАБОТКА СБП КОДОВ (ЧЕРЕЗ API НСПК) ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         try {
-            // Качаем страницу по ссылке из QR
-            const htmlText = await fetchNspkData(decodedText);
+            const url = new URL(decodedText);
+            const paytagId = url.searchParams.get("paytagid");
             
-            let extractedRoute = "";
-            let extractedTC = "";
+            if (!paytagId) throw new Error("Нет paytagid в ссылке");
 
-            // Пытаемся найти маршрут (og:title или title)
-            const titleMatch = htmlText.match(/<meta property="og:title" content="([^"]+)"/i) || htmlText.match(/<title>([^<]+)<\/title>/i);
-            if (titleMatch) extractedRoute = titleMatch[1];
+            routeEl.textContent = "Считываем данные...";
+            vehicleEl.textContent = "Ожидайте";
 
-            // Пытаемся найти Т/С (Т/С: 333 или скрытые параметры)
-            const tsMatch = htmlText.match(/Т\/С:\s*(\d+)/i) || htmlText.match(/"vehicle[^"]*":"(\d+)"/i) || htmlText.match(/vehicleId['"]?\s*:\s*['"]?(\d+)/i);
-            if (tsMatch) extractedTC = tsMatch[1];
+            // Запрос к официальному API НСПК через CORS-прокси
+            const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Ошибка сети');
+            const data = await response.json();
 
-            // Если нашли оба значения — генерируем билет
-            if (extractedRoute && extractedTC) {
-                routeEl.textContent = extractedRoute;
-                vehicleEl.textContent = extractedTC;
-                saveTrip(extractedRoute, config.price, extractedTC);
-                drawQR();
-                startTimer();
-            } else {
-                // Если данные не распарсились — просим ввести вручную
-                throw new Error("Не удалось распарсить HTML");
+            if (data.responseStatus !== 'OK' || !data.result || !data.result[0]) {
+                throw new Error("НСПК не вернул данные");
             }
 
+            const trip = data.result[0];
+            
+            // Формируем красивый текст: "Автобус №1"
+            const route = `${trip.vehicleTypeName} №${trip.routeNumber}`;
+            const tsNumber = trip.vehicleNumber;
+
+            // Успех!
+            routeEl.textContent = route;
+            vehicleEl.textContent = tsNumber;
+            saveTrip(route, config.price, tsNumber);
+            drawQR();
+            startTimer();
+
         } catch (error) {
-            console.error("Ошибка парсинга СБП:", error);
-            // Фоллбэк: если прокси упал или НСПК изменил верстку
+            console.error("Ошибка API НСПК:", error);
             routeEl.textContent = "Неизвестный маршрут";
             vehicleEl.textContent = "—";
             
-            // Автоматически открываем модалку ручного ввода через 0.5 сек
+            // Если API не ответило, открываем ручной ввод
             setTimeout(() => {
                 document.getElementById('openGarageModalBtn').click();
+                document.getElementById('modalGarageInput').placeholder = "Введите Т/С (например: 1158)";
             }, 500);
             
-            // Все равно сохраняем поездку, чтобы не сломать историю
             saveTrip(routeEl.textContent, config.price, "—");
             drawQR();
             startTimer();
@@ -434,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return; 
     }
 
-    // --- ЛОГИКА ДЛЯ ОБЫЧНЫХ QR (НЕ СБП) ---
+    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
     let extractedTC = '—';
     let transportName = 'Автобус';
     let routeNumber = '';
@@ -470,11 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- ОСТАЛЬНАЯ ЛОГИКА ---
   updateUI();
 
-  // ОБНОВЛЕННЫЙ FETCH КОНФИГА ЧЕРЕЗ API GITHUB
   fetch(CONFIG_URL + '?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
-      // Извлекаем контент из файла config.json
       if (data.files && data.files['config.json']) {
           const parsedData = JSON.parse(data.files['config.json'].content);
           config = { ...config, ...parsedData };
@@ -525,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startScanner();
   });
 
-  // История
   document.getElementById('historyBtn').addEventListener('click', () => {
     const historyList = document.getElementById('historyList');
     const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
