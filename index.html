@@ -272,7 +272,6 @@
   <script>
 document.addEventListener('DOMContentLoaded', () => {
   
-  // ИСПОЛЬЗУЕМ GITHUB API ДЛЯ ОБХОДА КЭША
   const GIST_ID = '2c2eb75c9dd5eb74a0a9af3698ae7b19'; 
   const CONFIG_URL = `https://api.github.com/gists/${GIST_ID}`;
 
@@ -322,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- СКАНЕР ---
   function startScanner() {
     document.getElementById('demoScreen').style.display = 'none';
     document.getElementById('scannerScreen').classList.remove('hidden');
@@ -371,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const routeEl = document.getElementById('routeTitle');
     const vehicleEl = document.getElementById('vehicleNumber');
 
-    // --- 1. ОБРАБОТКА СБП КОДОВ (ЧЕРЕЗ API НСПК И ТВОЙ ВОРКЕР) ---
+    // --- 1. ОБРАБОТКА СБП КОДОВ ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         try {
             const url = new URL(decodedText);
@@ -383,25 +381,20 @@ document.addEventListener('DOMContentLoaded', () => {
             vehicleEl.textContent = "Ожидайте";
 
             const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
-
-            // Твой личный пуленепробиваемый прокси (Cloudflare Worker)
             const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
             
             const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Ошибка сети');
+            if (!response.ok) throw new Error('Ошибка сети прокси: ' + response.status);
             const data = await response.json();
 
             if (data.responseStatus !== 'OK' || !data.result || !data.result[0]) {
-                throw new Error("НСПК не вернул данные");
+                throw new Error("НСПК ответил: " + JSON.stringify(data));
             }
 
             const trip = data.result[0];
-            
-            // Формируем красивый текст: "Автобус №1"
             const route = `${trip.vehicleTypeName} №${trip.routeNumber}`;
             const tsNumber = trip.vehicleNumber;
 
-            // Успех!
             routeEl.textContent = route;
             vehicleEl.textContent = tsNumber;
             saveTrip(route, config.price, tsNumber);
@@ -410,10 +403,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Ошибка API НСПК:", error);
+            
+            // --- ЖЕСТКАЯ ОТЛАДКА ---
+            alert("ПРОИЗОШЛА ОШИБКА!\n\n" + error.message + "\n\nТекст из QR: " + decodedText);
+            // -----------------------
+            
             routeEl.textContent = "Неизвестный маршрут";
             vehicleEl.textContent = "—";
             
-            // Если API не ответило, открываем ручной ввод
             setTimeout(() => {
                 document.getElementById('openGarageModalBtn').click();
                 document.getElementById('modalGarageInput').placeholder = "Введите Т/С (например: 1158)";
