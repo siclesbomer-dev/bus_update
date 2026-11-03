@@ -403,23 +403,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. ОБРАБОТКА СБП КОДОВ ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         
-        // Вытаскиваем paytagId на уровень выше, чтобы он был доступен в catch
         let paytagId = null;
         try {
             const url = new URL(decodedText);
             paytagId = url.searchParams.get("paytagid") || url.searchParams.get("payTagId");
         } catch (e) {
-            // Если URL битый, попробуем регуляркой
             const match = decodedText.match(/paytagid=([^&]+)/i);
             if (match) paytagId = match[1];
         }
 
-        // Если вообще ничего не нашли, используем сам текст как ключ
         const cacheKey = paytagId || decodedText;
 
         // Проверка умного кэша
         const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
         if (savedTags[cacheKey]) {
+            alert("Найдено в кэше! " + cacheKey); // ОТЛАДКА
             document.getElementById('mainPage').classList.remove('hidden');
             document.getElementById('routeTitle').textContent = savedTags[cacheKey].route;
             document.getElementById('vehicleNumber').textContent = savedTags[cacheKey].ts;
@@ -441,10 +439,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.responseStatus === 'OK' && data.result && data.result[0] && data.result[0].routeNumber && data.result[0].vehicleTypeName) {
                     const trip = data.result[0];
-                    const route = `${trip.vehicleTypeName} ${trip.routeNumber}`;
+                    const route = `${trip.vehicleTypeName} №${trip.routeNumber}`; // ДОБАВИЛ №
                     const tsNumber = trip.vehicleNumber || "—";
 
-                    // ОБЯЗАТЕЛЬНО СОХРАНЯЕМ В КЭШ, чтобы работало даже без интернета
                     savedTags[cacheKey] = { route: route, ts: tsNumber };
                     localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
 
@@ -461,8 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Если API не ответило (или упало), переходим к ручному выбору
-        window.currentPaytagId = cacheKey; // Теперь тут всегда будет значение
+        // Если API не ответило, переходим к ручному выбору
+        window.currentPaytagId = cacheKey;
         document.getElementById('manualScreen').classList.remove('hidden');
         return; 
     }
@@ -485,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (extractedTC !== '—' && routeNumber !== '') {
-        const route = `${transportName} ${routeNumber}`;
+        const route = `${transportName} №${routeNumber}`; // ДОБАВИЛ №
         document.getElementById('mainPage').classList.remove('hidden');
         document.getElementById('routeTitle').textContent = route;
         document.getElementById('vehicleNumber').textContent = extractedTC;
@@ -493,13 +490,13 @@ document.addEventListener('DOMContentLoaded', () => {
         drawQR(); 
         startTimer();
     } else {
-        window.currentPaytagId = decodedText; // Сохраняем сам текст как ключ
+        window.currentPaytagId = decodedText; 
         document.getElementById('manualScreen').classList.remove('hidden');
     }
   }
 
   window.selectRoute = function(type, num) {
-    pendingRouteStr = `${type} ${num}`;
+    pendingRouteStr = `${type} №${num}`; // ДОБАВИЛ №
     document.getElementById('manualScreen').classList.add('hidden');
     
     document.getElementById('modalGarageInput').value = '';
@@ -663,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ts: val
             };
             localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
-            window.currentPaytagId = null;
+            alert("Данные сохранены в кэш! Ключ: " + window.currentPaytagId); // ОТЛАДКА
         }
         
         saveTrip(pendingRouteStr, config.price, val);
