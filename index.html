@@ -56,33 +56,12 @@
   .hidden { display: none !important; }
 
   /* СКАНЕР */
-  .scanner-box {
-    position: relative;
-    width: 100%;
-    height: 300px;
-    background: #000;
-    border-radius: 20px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--border-color);
-    margin-bottom: 20px;
-  }
-
+  .scanner-box { position: relative; width: 100%; height: 300px; background: #000; border-radius: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid var(--border-color); margin-bottom: 20px; }
   #qr-reader { width: 100%; height: 100%; }
   #qr-reader video { object-fit: cover !important; border-radius: 20px; }
 
   /* Красный лазер */
-  .scanner-laser {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 3px;
-    background: #ff3333;
-    box-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333;
-    animation: scanAnimation 2s infinite linear;
-    z-index: 5;
-    display: none;
-  }
+  .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #ff3333; box-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333; animation: scanAnimation 2s infinite linear; z-index: 5; display: none; }
   @keyframes scanAnimation { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
 
   /* МОДАЛКИ */
@@ -419,20 +398,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function onScanSuccess(decodedText, decodedResult) {
     stopScanner();
-    
     document.getElementById('scannerScreen').classList.add('hidden');
     
-    // Если СБП-код
+    // --- 1. ОБРАБОТКА СБП КОДОВ ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         try {
             const url = new URL(decodedText);
             const paytagId = url.searchParams.get("paytagid");
             if (!paytagId) throw new Error("Нет paytagid в ссылке");
 
-            // Умный кэш
+            // Проверка умного кэша
             const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
             if (savedTags[paytagId]) {
-                // Нашли в кэше! Моментально выдаем билет
                 document.getElementById('mainPage').classList.remove('hidden');
                 document.getElementById('routeTitle').textContent = savedTags[paytagId].route;
                 document.getElementById('vehicleNumber').textContent = savedTags[paytagId].ts;
@@ -442,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Пробуем API
+            // Запрос к API
             const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
             const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
             
@@ -450,32 +427,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Ошибка сети');
             const data = await response.json();
 
-            if (data.responseStatus !== 'OK' || !data.result || !data.result[0]) {
-                throw new Error("НСПК не вернул данные");
+            if (data.responseStatus === 'OK' && data.result && data.result[0]) {
+                const trip = data.result[0];
+                if (trip.routeNumber && trip.vehicleTypeName) {
+                    const route = `${trip.vehicleTypeName} ${trip.routeNumber}`;
+                    const tsNumber = trip.vehicleNumber;
+
+                    document.getElementById('mainPage').classList.remove('hidden');
+                    document.getElementById('routeTitle').textContent = route;
+                    document.getElementById('vehicleNumber').textContent = tsNumber;
+                    saveTrip(route, config.price, tsNumber);
+                    drawQR();
+                    startTimer();
+                    return;
+                }
             }
-
-            const trip = data.result[0];
-            const route = `${trip.vehicleTypeName} ${trip.routeNumber}`; // Формат "Автобус 10"
-            const tsNumber = trip.vehicleNumber;
-
-            document.getElementById('mainPage').classList.remove('hidden');
-            document.getElementById('routeTitle').textContent = route;
-            document.getElementById('vehicleNumber').textContent = tsNumber;
-            
-            saveTrip(route, config.price, tsNumber);
-            drawQR();
-            startTimer();
-
+            throw new Error("Не удалось получить данные от API");
         } catch (error) {
             console.error("Ошибка API НСПК:", error);
-            // Если API не ответило, показываем экран ручного выбора транспорта
+            // Если API не ответило или выдало ошибку — переходим к ручному выбору
             window.currentPaytagId = url.searchParams.get("paytagid");
             document.getElementById('manualScreen').classList.remove('hidden');
+            return;
         }
-        return; 
     }
 
-    // --- ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
+    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
     let extractedTC = '—';
     let transportName = 'Автобус';
     let routeNumber = '';
@@ -495,15 +472,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (possibleRoute && possibleRoute[0] !== extractedTC) routeNumber = possibleRoute[0];
     }
 
-    const route = routeNumber ? `${transportName} ${routeNumber}` : transportName;
-    
-    document.getElementById('mainPage').classList.remove('hidden');
-    document.getElementById('routeTitle').textContent = route;
-    document.getElementById('vehicleNumber').textContent = extractedTC;
-    
-    saveTrip(route, config.price, extractedTC);
-    drawQR(); 
-    startTimer();
+    // Если мы четко распознали и маршрут, и Т/С — показываем билет
+    if (extractedTC !== '—' && routeNumber !== '') {
+        const route = `${transportName} ${routeNumber}`;
+        document.getElementById('mainPage').classList.remove('hidden');
+        document.getElementById('routeTitle').textContent = route;
+        document.getElementById('vehicleNumber').textContent = extractedTC;
+        saveTrip(route, config.price, extractedTC);
+        drawQR(); 
+        startTimer();
+    } else {
+        // Если не распознали — в ручной режим!
+        document.getElementById('manualScreen').classList.remove('hidden');
+    }
   }
 
   // --- ЛОГИКА РУЧНОГО ВЫБОРА ---
