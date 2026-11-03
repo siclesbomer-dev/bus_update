@@ -374,21 +374,33 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const url = new URL(decodedText);
             const paytagId = url.searchParams.get("paytagid");
-            
             if (!paytagId) throw new Error("Нет paytagid в ссылке");
 
             routeEl.textContent = "Считываем данные...";
             vehicleEl.textContent = "Ожидайте";
 
+            // Сначала проверяем Умный Кэш
+            const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
+            if (savedTags[paytagId]) {
+                // Нашли в кэше! Выдаем моментально
+                routeEl.textContent = savedTags[paytagId].route;
+                vehicleEl.textContent = savedTags[paytagId].ts;
+                saveTrip(savedTags[paytagId].route, config.price, savedTags[paytagId].ts);
+                drawQR();
+                startTimer();
+                return;
+            }
+
+            // Если в кэше нет, пробуем API
             const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
             const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
             
             const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Ошибка сети прокси: ' + response.status);
+            if (!response.ok) throw new Error('Ошибка сети');
             const data = await response.json();
 
             if (data.responseStatus !== 'OK' || !data.result || !data.result[0]) {
-                throw new Error("НСПК ответил: " + JSON.stringify(data));
+                throw new Error("НСПК не вернул данные");
             }
 
             const trip = data.result[0];
@@ -403,11 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Ошибка API НСПК:", error);
-            
-            // --- ЖЕСТКАЯ ОТЛАДКА ---
-            alert("ПРОИЗОШЛА ОШИБКА!\n\n" + error.message + "\n\nТекст из QR: " + decodedText);
-            // -----------------------
-            
+            // API упало или заблокировано. Открываем ручной ввод.
             routeEl.textContent = "Неизвестный маршрут";
             vehicleEl.textContent = "—";
             
@@ -577,7 +585,21 @@ document.addEventListener('DOMContentLoaded', () => {
   modalGarageInput.addEventListener('input', () => { modalGarageInput.value = modalGarageInput.value.replace(/\D/g, ''); modalGarageError.textContent = ''; });
   modalSaveBtn.addEventListener('click', () => {
     const val = modalGarageInput.value.trim(); if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
-    vehicleNumber.textContent = val; openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; closeModal();
+    vehicleNumber.textContent = val; openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; 
+    
+    // СОХРАНЯЕМ В УМНЫЙ КЭШ
+    if (window.currentPaytagId) {
+        const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
+        const guessedRoute = document.getElementById('routeTitle').textContent;
+        savedTags[window.currentPaytagId] = {
+            route: guessedRoute !== "Неизвестный маршрут" ? guessedRoute : "Автобус/Троллейбус",
+            ts: val
+        };
+        localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
+        window.currentPaytagId = null;
+    }
+    
+    closeModal();
   });
 
   const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
