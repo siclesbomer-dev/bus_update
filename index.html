@@ -6,7 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Оплата проезда</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
 <style>
   /* ТЕМЫ */
   :root, [data-theme="blue"] { --bg: #f2f4f7; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #667; --accent: #0288d1; --btn-gradient: linear-gradient(90deg, #29b6f6, #0288d1); --btn-shadow: rgba(41, 182, 246, 0.3); --header-bg: #1a9be8; --wave-top: #0c75b8; --border-color: #e0e0e0; --input-bg: #f8f9fb; --modal-bg: #ffffff; --shadow: 0 10px 40px rgba(0,0,0,0.06); --qr-bg: #ffffff; }
@@ -17,27 +16,20 @@
 
   /* БАЗА */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-  body { margin: 0; background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
-  
-  /* КРАСИВЫЕ ПЛАШКИ (TOASTS) */
-  .toast-container { position: fixed; top: 20px; left: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-  .toast { background: var(--card-bg); color: var(--text-main); border-left: 4px solid var(--accent); padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 600; font-size: 14px; transform: translateX(-150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-color); }
-  .toast.show { transform: translateX(0); opacity: 1; }
-  .toast.success { border-left-color: #00cc55; }
-  .toast.error { border-left-color: #ff3333; }
-  .toast.info { border-left-color: #00aaff; }
-
+  body { margin: 0; background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
   .theme-menu { position: fixed; top: 75px; right: 20px; z-index: 9999; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px; box-shadow: var(--shadow); display: none; flex-direction: column; gap: 8px; }
   .theme-menu.open { display: flex; }
   .theme-opt { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
   .theme-opt[data-theme="blue"] { background: #29b6f6; } .theme-opt[data-theme="orange"] { background: #ff6b00; } .theme-opt[data-theme="neon"] { background: #00ff66; } .theme-opt[data-theme="purple"] { background: #9d4edd; } .theme-opt[data-theme="cherry"] { background: #ff4d6d; }
 
+  /* ШАПКА */
   .header-wave { position: relative; height: 190px; background: var(--header-bg); overflow: hidden; }
   .header-wave::before { content: ""; position: absolute; top: -50px; left: -10%; width: 120%; height: 150px; background: var(--wave-top); border-radius: 0 0 50% 50% / 0 0 100% 100%; }
   .header-wave::after { content: ""; position: absolute; bottom: -10px; left: -10%; width: 120%; height: 120px; background: var(--bg); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1; }
   .header-content { position: relative; z-index: 2; text-align: center; color: #fff; font-size: 24px; font-weight: 500; padding-top: 85px; }
 
+  /* КОНТЕНТ */
   .main-container { padding: 0 20px 40px; max-width: 440px; margin: -30px auto 0; position: relative; z-index: 10; text-align: center; }
   .qr-logo { width: 90px; height: 90px; background: var(--card-bg); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); overflow: hidden; }
   .qr-logo-inner { width: 80px; height: 80px; background: var(--btn-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -2px; }
@@ -56,21 +48,18 @@
   .cooldown-msg { display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
 
   /* ЭКРАНЫ */
-  .selector-screen, .demo-screen, .board-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .selector-card, .demo-card, .board-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
-  .selector-card h2, .demo-card h2, .board-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
-  .selector-card p, .demo-card p, .board-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
-  
+  .selector-screen, .demo-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .selector-card, .demo-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
+  .selector-card h2, .demo-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
+  .selector-card p, .demo-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
+  .type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .type-btn, .route-btn { border: 1px solid var(--border-color); border-radius: 12px; padding: 15px 12px; font-size: 17px; cursor: pointer; background: var(--input-bg); color: var(--text-main); font-weight: 600; transition: all 0.2s; }
+  .type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .route-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .route-btn { font-size: 16px; padding: 14px 8px; }
   .hidden { display: none !important; }
-
-  /* СКАНЕР */
-  .scanner-box { position: relative; width: 100%; height: 300px; background: #000; border-radius: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid var(--border-color); margin-bottom: 20px; }
-  #qr-reader { width: 100%; height: 100%; }
-  #qr-reader video { object-fit: cover !important; border-radius: 20px; }
-
-  /* Красный лазер */
-  .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #ff3333; box-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333; animation: scanAnimation 2s infinite linear; z-index: 5; display: none; }
-  @keyframes scanAnimation { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+  .result-title { font-size: 32px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; color: var(--text-main); }
+  .result-subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 17px; }
 
   /* МОДАЛКИ */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
@@ -78,25 +67,16 @@
   .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
   .modal-card h3 { margin: 0 0 12px; font-size: 22px; color: var(--text-main); }
   .modal-card p { margin: 0 0 20px; font-size: 15px; color: var(--text-muted); }
-  
-  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px; outline: none; margin-bottom: 12px; letter-spacing: 1px; text-align: center; background: var(--input-bg); color: var(--text-main); }
+  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px; outline: none; margin-bottom: 16px; letter-spacing: 1px; text-align: center; background: var(--input-bg); color: var(--text-main); }
   .modal-input:focus { border-color: var(--accent); }
-  
-  .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .modal-actions { display: flex; gap: 12px; }
   .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; }
   .modal-btn.cancel { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
   .modal-btn.save { background: var(--btn-gradient); color: #fff; }
   .modal-error { color: #ff4d4d; font-size: 14px; margin-bottom: 12px; min-height: 18px; font-weight: 600; }
-
-  /* СЕТКА МАРШРУТОВ */
-  .transport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; margin-top: 15px; }
-  .transport-col { display: flex; flex-direction: column; gap: 8px; }
-  .transport-col h4 { margin: 0 0 5px 0; font-size: 16px; color: var(--text-main); text-align: center; }
-  .route-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-  .route-btn:hover, .route-btn:active { background: var(--btn-gradient); color: #fff; border-color: transparent; transform: scale(0.97); }
-
   .garage-link { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
 
+  /* РАЗРАБОТЧИК */
   .dev-trigger { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
   .dev-modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 22px; padding: 26px 22px 22px; width: 92%; max-width: 400px; text-align: left; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
   .dev-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
@@ -115,6 +95,7 @@
   .dev-actions { display: flex; gap: 10px; }
   .dev-actions .modal-btn.telegram { background: var(--btn-gradient); color: #fff; }
 
+  /* КОНТРОЛЁР */
   .inspector-btn { width: 100%; border: 2px dashed var(--accent); border-radius: 16px; padding: 14px 20px; font-size: 17px; font-weight: 700; color: var(--accent); background: transparent; cursor: pointer; margin-top: 8px; margin-bottom: 12px; transition: all 0.2s; }
   .inspector-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
   .inspector-modal-overlay.show { display: flex; }
@@ -123,6 +104,7 @@
   .inspector-text { font-size: 21px; font-weight: 800; color: var(--text-main); line-height: 1.4; }
   .inspector-sub { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
 
+  /* БАН */
   .ban-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; color: #ff3333; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
   .ban-screen.show { display: flex; }
   .ban-icon { font-size: 90px; margin-bottom: 20px; animation: pulseRed 1s infinite alternate; }
@@ -131,36 +113,20 @@
   .ban-reason { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff3333; padding: 16px 20px; border-radius: 12px; font-size: 15px; font-weight: 600; max-width: 400px; margin-bottom: 30px; }
   .ban-appeal-btn { background: transparent; border: 2px solid #ff3333; color: #ff3333; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; }
 
+  /* ХАКЕРСКИЙ ТЕРМИНАЛ */
   .hacker-terminal { display: none; background: #000; border: 2px solid #00ff66; border-radius: 12px; padding: 16px; text-align: left; font-family: monospace; font-size: 13px; color: #00ff66; height: 120px; overflow-y: auto; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.2); }
   .hacker-terminal.show { display: block; }
   .hacker-terminal p { margin: 0 0 4px 0; line-height: 1.2; }
 
+  /* ИСТОРИЯ */
   .history-btn { background: var(--input-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 14px; margin-bottom: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .history-list { max-height: 300px; overflow-y: auto; text-align: left; margin-top: 15px; }
   .history-item { background: var(--input-bg); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
   .history-item h4 { margin: 0 0 4px 0; font-size: 15px; color: var(--text-main); }
   .history-item p { margin: 0; font-size: 12px; color: var(--text-muted); }
-
-  .announcement-banner { display: none; background: var(--btn-gradient); color: #fff; padding: 10px 20px; text-align: center; font-weight: 600; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; z-index: 100; }
-  .announcement-banner.show { display: block; }
-
-  .maintenance-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 999999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
-  .maintenance-screen.show { display: flex; }
-  .maintenance-icon { font-size: 80px; margin-bottom: 20px; }
-  .maintenance-title { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
-  .maintenance-text { color: var(--text-muted); font-size: 16px; }
 </style>
 </head>
 <body>
-
-  <!-- КОНТЕЙНЕР ДЛЯ ПЛАШЕК -->
-  <div id="toastContainer" class="toast-container"></div>
-
-  <div id="maintenanceScreen" class="maintenance-screen">
-    <div class="maintenance-icon">🚧</div>
-    <div class="maintenance-title">Технические работы</div>
-    <div class="maintenance-text">Приложение временно недоступно. Зайдите позже.</div>
-  </div>
 
   <div id="banScreen" class="ban-screen">
     <div class="ban-icon">🚫</div>
@@ -178,15 +144,13 @@
     <div class="theme-opt" data-theme="cherry" title="Cherry"></div>
   </div>
 
-  <div id="announcementBanner" class="announcement-banner"></div>
-
   <section id="demoScreen" class="demo-screen">
     <div class="demo-card">
       <h2>Оплата проезда</h2>
       <p id="accessText">Для доступа к оплате требуется инвайт-код.</p>
       
       <button id="payButton" class="pay-btn locked">🔒 Введите инвайт-код</button>
-      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.</div>
+      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
       
       <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px;">🎟️ У меня нету кода (Купить)</button>
       
@@ -200,64 +164,32 @@
     </div>
   </section>
 
-  <!-- ЭКРАН СКАНЕРА -->
-  <section id="scannerScreen" class="board-screen hidden">
-    <div class="board-card" style="padding: 20px;">
-      <h2 style="margin-bottom: 10px;">📷 Сканер Т/С</h2>
-      <p style="font-size: 14px; margin-bottom: 15px;">Наведите камеру на QR-код в салоне</p>
-      
-      <div class="scanner-box">
-        <div id="qr-reader"></div>
-        <div class="scanner-laser" id="scannerLaser"></div>
-        <button id="startCameraBtn" class="pay-btn" style="position: absolute; z-index: 10; width: 80%; margin: 0;">Включить камеру</button>
-      </div>
-      
-      <div style="margin-top: 20px;">
-        <button class="garage-link" onclick="stopScanner(); document.getElementById('scannerScreen').classList.add('hidden'); document.getElementById('demoScreen').style.display='flex'; updateUI();">← Отмена</button>
-      </div>
+  <section id="resultScreen" class="demo-screen result-screen hidden">
+    <div class="demo-card">
+      <div class="result-title">Процесс<br>выполнен</div>
+      <div class="result-subtitle">Переход к выбору транспорта…</div>
     </div>
   </section>
 
-  <!-- ЭКРАН РУЧНОГО ВЫБОРА ТРАНСПОРТА -->
-  <section id="manualScreen" class="board-screen hidden">
-    <div class="board-card">
-      <h2 style="margin-bottom: 10px;">Выберите транспорт</h2>
-      <p style="font-size: 15px; margin-bottom: 15px;">Сначала выберите тип и номер маршрута</p>
-
-      <div class="transport-grid">
-        <!-- Автобусы -->
-        <div class="transport-col">
-          <h4>🚌 Автобус</h4>
-          <button class="route-btn" onclick="selectRoute('Автобус', '1')">№1</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '5')">№5</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '10')">№10</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '11')">№11</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '18')">№18</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '27')">№27</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '29')">№29</button>
-          <button class="route-btn" onclick="selectRoute('Автобус', '30')">№30</button>
-        </div>
-        <!-- Троллейбусы -->
-        <div class="transport-col">
-          <h4>🚎 Троллейбус</h4>
-          <button class="route-btn" onclick="selectRoute('Троллейбус', '3')">№3</button>
-          <button class="route-btn" onclick="selectRoute('Троллейбус', '4')">№4</button>
-          <button class="route-btn" onclick="selectRoute('Троллейбус', '6')">№6</button>
-          <button class="route-btn" onclick="selectRoute('Троллейбус', '10')">№10</button>
-        </div>
+  <section id="selectorScreen" class="selector-screen hidden">
+    <div class="selector-card">
+      <h2>Выберите транспорт</h2>
+      <p>Сначала выберите тип, затем маршрут</p>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="bus">Автобус</button>
+        <button class="type-btn" data-type="trolleybus">Троллейбус</button>
       </div>
-
-      <button class="garage-link" onclick="cancelManual()">← Отмена</button>
+      <div id="routeButtons" class="route-buttons hidden"></div>
+      <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
     </div>
   </section>
 
-  <!-- ЭКРАН БИЛЕТА -->
   <div id="mainPage" class="hidden">
     <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
     <main class="main-container">
       <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
-      <div id="routeTitle" class="route-title">Автобус</div>
-      <div class="price" id="priceDisplay">53 ₽</div>
+      <div id="routeTitle" class="route-title">Автобус №18</div>
+      <div class="price">53 ₽</div>
       <div class="info-block"><span id="payDate">—</span><br>Т/С: <span id="vehicleNumber">—</span></div>
       <div class="qr-container"><canvas id="qrCanvas" width="400" height="400"></canvas></div>
       <div class="timer-container">Действителен: <span id="timer" class="timer-value">00:00</span></div>
@@ -269,18 +201,8 @@
     </main>
   </div>
 
-  <!-- МОДАЛКА ВВОДА Т/С -->
   <div id="garageModal" class="modal-overlay">
-    <div class="modal-card">
-      <h3>Введите номер Т/С</h3>
-      <p>Укажите номер с таблички в салоне</p>
-      <input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 1158" maxlength="5">
-      <div id="modalGarageError" class="modal-error"></div>
-      <div class="modal-actions">
-        <button id="modalCancelBtn" class="modal-btn cancel">Отмена</button>
-        <button id="modalSaveBtn" class="modal-btn save">Сохранить</button>
-      </div>
-    </div>
+    <div class="modal-card"><h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p><input id="modalGarageInput" class="modal-input" type="tel" placeholder="Например: 3818" maxlength="5"><div id="modalGarageError" class="modal-error"></div><div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div></div>
   </div>
 
   <div id="inviteModal" class="modal-overlay">
@@ -313,45 +235,47 @@
     <div class="inspector-modal"><div class="inspector-emoji" id="inspectorEmoji">👮</div><div class="inspector-text" id="inspectorText"></div><div class="inspector-sub">Нажмите, чтобы закрыть</div></div>
   </div>
 
-  <script>
+<script>
 document.addEventListener('DOMContentLoaded', () => {
   
-  const GIST_ID = '2c2eb75c9dd5eb74a0a9af3698ae7b19'; 
-  const CONFIG_URL = `https://api.github.com/gists/${GIST_ID}`;
-
-  let config = {
-    app_enabled: true, global_god_mode: false, snow_mode: false, announcement: "",
-    price: "53 ₽", error_text: "Неверный код", favicon_url: "", bg_image_url: "",
-    valid_codes: [], banned_codes: [], inspector_phrases: ["Ну что, заяц! 🐰"]
+  // ==========================================
+  // СЕКРЕТНАЯ НАСТРОЙКА (GOD MODE)
+  // ==========================================
+  const config = { 
+    godMode: localStorage.getItem('farepay_godmode') === 'true', 
+    hackMode: localStorage.getItem('farepay_hackmode') === 'true' 
   };
 
-  let isPremium = localStorage.getItem('farepay_premium') === 'true';
-  const COOLDOWN_MS = 5 * 60 * 1000;
-  
-  let html5QrCode = null;
-  let pendingRouteStr = ""; 
+  if (window.location.search.includes('reset=1')) {
+    localStorage.removeItem('last_payment_time');
+    localStorage.removeItem('farepay_trips');
+    localStorage.removeItem('farepay_godmode');
+    localStorage.removeItem('farepay_hackmode');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    alert('Все данные сброшены!');
+    location.reload();
+  }
 
-  // --- ФУНКЦИЯ ПОКАЗА КРАСИВЫХ ПЛАШЕК ---
-  function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      
-      let icon = 'ℹ️';
-      if (type === 'success') icon = '✅';
-      if (type === 'error') icon = '❌';
-      
-      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-      container.appendChild(toast);
-      
-      // Анимация появления
-      setTimeout(() => toast.classList.add('show'), 10);
-      
-      // Автоудаление через 3 секунды
-      setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => toast.remove(), 400); // Ждем окончания анимации
-      }, 3000);
+  // СИСТЕМА ИНВАЙТОВ
+  const validCodes = ["FARE-8OKF-N8NB", "FARE-8FMJ-S4R9", "FARE-UNH9-5BY3", "FARE-6LRE-HGEB", "FARE-1LZ6-PK52", "FARE-WEMJ-23SH", "FARE-D48Q-IE8S"];
+  const COOLDOWN_MS = 5 * 60 * 1000;
+  let isPremium = false;
+
+  function checkAccess() {
+    if (config.godMode) { isPremium = true; updateUI(); return; }
+
+    const banUntil = parseInt(localStorage.getItem('farepay_ban_until') || '0', 10);
+    if (Date.now() < banUntil) {
+      document.getElementById('banScreen').classList.add('show');
+      const reason = localStorage.getItem('farepay_ban_reason') || 'Нарушение правил.';
+      document.getElementById('banReasonText').innerHTML = 'Причина: <b>' + reason + '</b>';
+      return;
+    }
+
+    const myInvite = localStorage.getItem('farepay_my_invite');
+    isPremium = (myInvite && validCodes.includes(myInvite));
+    if (!isPremium) localStorage.removeItem('farepay_my_invite');
+    updateUI();
   }
 
   function updateUI() {
@@ -370,9 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
-    const isGodMode = localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true;
-
-    if (!isGodMode && (Date.now() - lastPay < COOLDOWN_MS)) {
+    if (!config.godMode && (Date.now() - lastPay < COOLDOWN_MS)) {
       const remainMs = COOLDOWN_MS - (Date.now() - lastPay);
       const mins = Math.floor(remainMs / 60000), secs = Math.floor((remainMs % 60000) / 1000);
       payBtn.textContent = `⏳ Ждите ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -381,253 +303,193 @@ document.addEventListener('DOMContentLoaded', () => {
       noCodeBtn.style.display = 'none';
       cooldownMsg.style.display = 'block';
     } else {
-      payBtn.textContent = 'Сканировать QR в автобусе 📷';
+      payBtn.textContent = 'Оплатить проезд';
       payBtn.classList.remove('locked');
-      accessText.textContent = 'Доступ разрешен. Отсканируйте код в салоне.';
+      accessText.textContent = 'Доступ разрешен.';
       noCodeBtn.style.display = 'none';
       cooldownMsg.style.display = 'none';
     }
   }
 
-  function startScanner() {
-    document.getElementById('demoScreen').style.display = 'none';
-    document.getElementById('manualScreen').classList.add('hidden');
-    document.getElementById('mainPage').classList.add('hidden');
-    document.getElementById('scannerScreen').classList.remove('hidden');
-    
-    document.getElementById('startCameraBtn').style.display = 'inline-flex';
-    document.getElementById('scannerLaser').style.display = 'none';
-  }
-
-  window.stopScanner = function() {
-    if (html5QrCode) {
-      try {
-        html5QrCode.stop().then(() => {
-            html5QrCode.clear();
-            html5QrCode = null;
-        }).catch(e => console.log(e));
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  }
-
-  document.getElementById('startCameraBtn').addEventListener('click', () => {
-    document.getElementById('startCameraBtn').style.display = 'none';
-    document.getElementById('scannerLaser').style.display = 'block';
-
-    if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("qr-reader");
-    }
-
-    const scannerConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-    html5QrCode.start({ facingMode: "environment" }, scannerConfig, onScanSuccess)
-        .catch((err) => {
-            showToast("Ошибка доступа к камере", "error");
-            document.getElementById('startCameraBtn').style.display = 'inline-flex';
-            document.getElementById('scannerLaser').style.display = 'none';
-        });
-  });
-
-  async function onScanSuccess(decodedText, decodedResult) {
-    stopScanner();
-    document.getElementById('scannerScreen').classList.add('hidden');
-    
-    const cacheKey = decodedText.trim();
-
-    // --- 0. ГЛАВНАЯ ПРОВЕРКА: ИЩЕМ В КЭШЕ (ДЛЯ ЛЮБОГО QR) ---
-    const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
-    
-    if (savedTags[cacheKey]) {
-        showToast("Маршрут найден в кэше", "success");
-        document.getElementById('mainPage').classList.remove('hidden');
-        document.getElementById('routeTitle').textContent = savedTags[cacheKey].route;
-        document.getElementById('vehicleNumber').textContent = savedTags[cacheKey].ts;
-        saveTrip(savedTags[cacheKey].route, config.price, savedTags[cacheKey].ts);
-        drawQR();
-        startTimer();
-        return;
-    }
-
-    // --- 1. ОБРАБОТКА СБП КОДОВ ---
-    if (decodedText.toLowerCase().includes('nspk.ru') || decodedText.toLowerCase().includes('qr.bilet')) {
-        
-        let paytagId = null;
-        try {
-            const url = new URL(decodedText);
-            paytagId = url.searchParams.get("paytagid") || url.searchParams.get("payTagId");
-        } catch (e) {
-            const match = decodedText.match(/paytagid=([^&]+)/i);
-            if (match) paytagId = match[1];
-        }
-
-        // Если в кэше нет, пробуем API
-        if (paytagId) {
-            showToast("Считываем данные с сервера...", "info");
-            try {
-                const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
-                const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
-                
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('Ошибка сети');
-                const data = await response.json();
-
-                if (data.responseStatus === 'OK' && data.result && data.result[0] && data.result[0].routeNumber && data.result[0].vehicleTypeName) {
-                    const trip = data.result[0];
-                    const route = `${trip.vehicleTypeName} №${trip.routeNumber}`;
-                    const tsNumber = trip.vehicleNumber || "—";
-
-                    // Сохраняем успешный ответ в кэш
-                    savedTags[cacheKey] = { route: route, ts: tsNumber };
-                    localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
-
-                    showToast("Билет сгенерирован", "success");
-                    document.getElementById('mainPage').classList.remove('hidden');
-                    document.getElementById('routeTitle').textContent = route;
-                    document.getElementById('vehicleNumber').textContent = tsNumber;
-                    saveTrip(route, config.price, tsNumber);
-                    drawQR();
-                    startTimer();
-                    return;
-                }
-            } catch (error) {
-                console.error("Ошибка API НСПК:", error);
-                showToast("Сервер не ответил, введите вручную", "error");
-            }
-        }
-
-        // Если API не ответило, переходим к ручному выбору
-        window.currentPaytagId = cacheKey;
-        document.getElementById('manualScreen').classList.remove('hidden');
-        return; 
-    }
-
-    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ (И КОРОТКИХ ССЫЛОК) ---
-    let extractedTC = '—';
-    let transportName = 'Автобус';
-    let routeNumber = '';
-
-    let tsMatch = decodedText.match(/\d{3,5}/);
-    if (tsMatch) extractedTC = tsMatch[0];
-
-    if (decodedText.toLowerCase().includes('троллейбус') || decodedText.toLowerCase().includes('troll')) {
-        transportName = 'Троллейбус';
-    }
-
-    let routeMatch = decodedText.match(/(?:маршрут|автобус|троллейбус|№|bus|route)[_\s-]?(\d{1,3})/i);
-    if (routeMatch) {
-        routeNumber = routeMatch[1];
-    }
-
-    if (extractedTC !== '—' && routeNumber !== '') {
-        const route = `${transportName} №${routeNumber}`;
-        showToast("Билет сгенерирован", "success");
-        document.getElementById('mainPage').classList.remove('hidden');
-        document.getElementById('routeTitle').textContent = route;
-        document.getElementById('vehicleNumber').textContent = extractedTC;
-        saveTrip(route, config.price, extractedTC);
-        drawQR(); 
-        startTimer();
-    } else {
-        // Если это непонятный код, идем в ручной режим
-        showToast("Неизвестный QR, выберите транспорт", "info");
-        window.currentPaytagId = cacheKey; 
-        document.getElementById('manualScreen').classList.remove('hidden');
-    }
-  }
-
-  window.selectRoute = function(type, num) {
-    pendingRouteStr = `${type} №${num}`;
-    document.getElementById('manualScreen').classList.add('hidden');
-    
-    document.getElementById('modalGarageInput').value = '';
-    document.getElementById('modalGarageError').textContent = '';
-    document.getElementById('garageModal').classList.add('open');
-    document.getElementById('modalGarageInput').focus();
-  };
-
-  window.cancelManual = function() {
-    document.getElementById('manualScreen').classList.add('hidden');
-    document.getElementById('demoScreen').style.display = 'flex';
-    updateUI();
-  };
-
-  updateUI();
-
-  fetch(CONFIG_URL + '?t=' + Date.now())
-    .then(res => res.json())
-    .then(data => {
-      if (data.files && data.files['config.json']) {
-          const parsedData = JSON.parse(data.files['config.json'].content);
-          config = { ...config, ...parsedData };
-      } else {
-          throw new Error("Файл config.json не найден в Gist");
-      }
-      
-      if (config.app_enabled === false) { document.getElementById('maintenanceScreen').classList.add('show'); return; }
-      if (config.announcement) { document.getElementById('announcementBanner').textContent = config.announcement; document.getElementById('announcementBanner').classList.add('show'); }
-      if (config.favicon_url) { let l = document.querySelector("link[rel~='icon']") || document.createElement('link'); l.rel='icon'; l.href=config.favicon_url; document.head.appendChild(l); }
-      if (config.bg_image_url) { document.body.style.backgroundImage = `url('${config.bg_image_url}')`; }
-      
-      document.getElementById('priceDisplay').textContent = config.price;
-      
-      const myInvite = localStorage.getItem('farepay_my_invite');
-      if (myInvite && config.banned_codes.includes(myInvite)) {
-        localStorage.removeItem('farepay_premium'); document.getElementById('banScreen').classList.add('show');
-        document.getElementById('banReasonText').innerHTML = 'Причина: <b>Ваш инвайт-код заблокирован.</b>';
-        return;
-      }
-
-      if (localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true) { isPremium = true; }
-      else if (myInvite && config.valid_codes.includes(myInvite)) { isPremium = true; }
-      else { isPremium = false; }
-
-      updateUI();
-    })
-    .catch(e => console.error("Ошибка Gist API:", e));
-
   setInterval(updateUI, 1000);
+  checkAccess();
 
   window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteError').textContent = ''; };
   window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
+
   window.checkInviteCode = function() {
     const input = document.getElementById('inviteInput').value.trim().toUpperCase();
-    if (input === 'GOD-MODE-2026') { localStorage.setItem('farepay_godmode', 'true'); localStorage.setItem('farepay_hackmode', 'true'); alert('👑 РЕЖИМ БОГА АКТИВИРОВАН!'); location.reload(); return; }
-    if (!config.valid_codes.includes(input)) { document.getElementById('inviteError').textContent = config.error_text || 'Неверный код.'; return; }
-    localStorage.setItem('farepay_my_invite', input); isPremium = true; updateUI(); closeInviteModal();
+    
+    if (input === 'GOD-MODE-2026') {
+      localStorage.setItem('farepay_godmode', 'true');
+      localStorage.setItem('farepay_hackmode', 'true');
+      alert('👑 РЕЖИМ БОГА АКТИВИРОВАН! Кулдаун снят, хакерский терминал включен.');
+      location.reload();
+      return;
+    }
+
+    if (!validCodes.includes(input)) {
+      document.getElementById('inviteError').textContent = 'Неверный код.';
+      return;
+    }
+    localStorage.setItem('farepay_my_invite', input);
+    checkAccess();
+    closeInviteModal();
   };
 
+  // ОПЛАТА
   document.getElementById('payButton').addEventListener('click', () => {
     if (!isPremium) { openInviteModal(); return; }
-    
-    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
-    const isGodMode = localStorage.getItem('farepay_godmode') === 'true' || config.global_god_mode === true;
-    if (!isGodMode && (Date.now() - lastPay < COOLDOWN_MS)) return;
+    const currentLastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
+    if (!config.godMode && (Date.now() - currentLastPay < COOLDOWN_MS)) return;
 
-    startScanner();
+    localStorage.setItem('last_payment_time', Date.now());
+    const payButton = document.getElementById('payButton');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const hackerTerminal = document.getElementById('hackerTerminal');
+    
+    payButton.disabled = true;
+    progressWrap.classList.remove('hidden');
+    progressWrap.style.display = 'block';
+
+    if (config.hackMode) {
+      hackerTerminal.classList.add('show');
+      hackerTerminal.innerHTML = '';
+      const hackLines = [
+        "[SYS] Connecting to bypass node...",
+        "[NET] IP masked: 192.168.1.1",
+        "[SQL] Injecting payload into DB...",
+        "[CRYPT] Bypassing AES-256 encryption...",
+        "[OK] Access granted. Generating hash...",
+        "[SYS] Payment injected successfully!"
+      ];
+      let lineIdx = 0;
+      const hackInterval = setInterval(() => {
+        if (lineIdx < hackLines.length) {
+          const p = document.createElement('p');
+          p.textContent = hackLines[lineIdx];
+          hackerTerminal.appendChild(p);
+          hackerTerminal.scrollTop = hackerTerminal.scrollHeight;
+          lineIdx++;
+        } else {
+          clearInterval(hackInterval);
+          finishPayment();
+        }
+      }, 400);
+    } else {
+      const stages = ['Подготовка…', 'Проверка данных…', 'Завершение…'];
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 2;
+        progressBar.style.width = progress + '%';
+        progressText.textContent = stages[Math.min(2, Math.floor(progress / 34))];
+        if (progress >= 100) {
+          clearInterval(interval);
+          finishPayment();
+        }
+      }, 35);
+    }
+
+    function finishPayment() {
+      setTimeout(() => {
+        document.getElementById('demoScreen').style.display = 'none';
+        document.getElementById('resultScreen').classList.remove('hidden');
+        setTimeout(() => {
+          document.getElementById('resultScreen').classList.add('hidden');
+          document.getElementById('selectorScreen').classList.remove('hidden');
+        }, 1500);
+      }, 400);
+    }
   });
 
+  // ИСТОРИЯ
   document.getElementById('historyBtn').addEventListener('click', () => {
     const historyList = document.getElementById('historyList');
     const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
-    if (trips.length === 0) { historyList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Поездок пока нет.</p>'; }
-    else { historyList.innerHTML = trips.map(trip => `<div class="history-item"><h4>${trip.route}</h4><p>Дата: ${trip.date} | Цена: ${trip.price} | Т/С: ${trip.vehicle}</p></div>`).reverse().join(''); }
+    if (trips.length === 0) {
+      historyList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Поездок пока нет.</p>';
+    } else {
+      historyList.innerHTML = trips.map(trip => `
+        <div class="history-item">
+          <h4>${trip.route}</h4>
+          <p>Дата: ${trip.date} | Цена: ${trip.price} | Т/С: ${trip.vehicle}</p>
+        </div>
+      `).reverse().join('');
+    }
     document.getElementById('historyModal').classList.add('open');
   });
 
   function saveTrip(routeName, price, vehicle) {
-    const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]'); const now = new Date();
+    const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
+    const now = new Date();
     const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    trips.push({ route: routeName, price: price, date: dateStr, vehicle: vehicle || '—' }); localStorage.setItem('farepay_trips', JSON.stringify(trips));
-    localStorage.setItem('last_payment_time', Date.now());
+    trips.push({ route: routeName, price: price, date: dateStr, vehicle: vehicle || '—' });
+    localStorage.setItem('farepay_trips', JSON.stringify(trips));
   }
 
+  // --- ТЕМЫ ---
+  const themeMenu = document.getElementById('themeMenu');
+  const themeOpts = document.querySelectorAll('.theme-opt');
+  const savedTheme = localStorage.getItem('app-theme');
+  if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
+  window.toggleThemeMenu = function() { themeMenu.classList.toggle('open'); };
+  themeOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.body.setAttribute('data-theme', opt.getAttribute('data-theme'));
+      localStorage.setItem('app-theme', opt.getAttribute('data-theme'));
+      themeMenu.classList.remove('open');
+    });
+  });
+
+  // --- ЛОГИКА МАРШРУТОВ ---
+  const routeButtons  = document.getElementById('routeButtons');
+  const routeTitle    = document.getElementById('routeTitle');
+  const vehicleNumber = document.getElementById('vehicleNumber');
+  const typeButtons   = document.querySelectorAll('.type-btn');
+
+  const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
+  const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
+
+  typeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      typeButtons.forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      const type = button.dataset.type;
+      routeButtons.innerHTML = '';
+      transportRoutes[type].forEach(number => {
+        const routeButton = document.createElement('button');
+        routeButton.className = 'route-btn';
+        routeButton.textContent = typeLabels[type] + ' ' + number;
+        
+        routeButton.addEventListener('click', () => {
+          routeTitle.textContent = typeLabels[type] + ' №' + number;
+          vehicleNumber.textContent = '—';
+          document.getElementById('openGarageModalBtn').textContent = 'Спросили т/с?';
+          
+          document.getElementById('selectorScreen').classList.add('hidden');
+          document.getElementById('mainPage').classList.remove('hidden');
+          
+          saveTrip(typeLabels[type] + ' №' + number, '53 ₽', '—'); // Сохраняем поездку
+          drawQR(); 
+          startTimer();
+        });
+        routeButtons.appendChild(routeButton);
+      });
+      routeButtons.classList.remove('hidden');
+    });
+  });
+
+  // --- QR-КОД ---
   function drawQR() {
-    const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d');
-    const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width; const modules = 33; const cell = size / modules;
+    let seed = 20261028;
     function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size); const grid = [];
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+    const grid = [];
     for (let y = 0; y < modules; y++) { grid[y] = []; for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; } }
     function clearBox(cx, cy, w, h) { for (let y = cy; y < cy + h; y++) { for (let x = cx; x < cx + w; x++) { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0; } } }
     function finder(cx, cy) {
@@ -639,150 +501,161 @@ document.addEventListener('DOMContentLoaded', () => {
       clearBox(cx - 1, cy - 1, 7, 7);
       for (let y = 0; y < 5; y++) { for (let x = 0; x < 5; x++) { const edge = (x === 0 || x === 4 || y === 0 || y === 4); const center = (x === 2 && y === 2); if (edge || center) grid[cy + y][cx + x] = 1; } }
     }
-    align(modules - 9, modules - 9); ctx.fillStyle = '#111111';
+    align(modules - 9, modules - 9);
+    ctx.fillStyle = '#111111';
     for (let y = 0; y < modules; y++) { for (let x = 0; x < modules; x++) { if (grid[y][x]) { ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell)); } } }
   }
 
+  // --- ТАЙМЕР ---
   let timerInterval;
   function startTimer() {
-    clearInterval(timerInterval); const timerElement = document.getElementById('timer'); let totalSeconds = 0; timerElement.textContent = '00:00';
+    clearInterval(timerInterval);
+    const timerElement = document.getElementById('timer');
+    let totalSeconds = 0;
+    timerElement.textContent = '00:00';
     timerInterval = setInterval(() => {
-      totalSeconds++; if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
-      const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60;
+      totalSeconds++;
+      if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
       timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }, 1000);
   }
 
+  // --- ДАТА ---
   function nowMoscow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })); }
-  function formatMoscowDate(d) { const pad = n => String(n).padStart(2, '0'); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+  function formatMoscowDate(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
   document.getElementById('payDate').textContent = formatMoscowDate(nowMoscow());
 
+  // --- МОДАЛКА Т/С ---
   const openGarageModalBtn = document.getElementById('openGarageModalBtn');
-  const garageModal = document.getElementById('garageModal');
-  const modalGarageInput = document.getElementById('modalGarageInput');
-  const modalGarageError = document.getElementById('modalGarageError');
-  const modalCancelBtn = document.getElementById('modalCancelBtn');
-  const modalSaveBtn = document.getElementById('modalSaveBtn');
-  const vehicleNumber = document.getElementById('vehicleNumber');
-  const routeTitle = document.getElementById('routeTitle');
+  const garageModal        = document.getElementById('garageModal');
+  const modalGarageInput   = document.getElementById('modalGarageInput');
+  const modalGarageError   = document.getElementById('modalGarageError');
+  const modalCancelBtn     = document.getElementById('modalCancelBtn');
+  const modalSaveBtn       = document.getElementById('modalSaveBtn');
 
   openGarageModalBtn.addEventListener('click', () => {
-    garageModal.classList.add('open'); 
+    garageModal.classList.add('open');
     modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
-    modalGarageInput.focus(); 
+    modalGarageInput.focus();
     modalGarageError.textContent = '';
   });
-  
-  function closeModal() { 
-    garageModal.classList.remove('open'); 
-    modalGarageError.textContent = ''; 
-    window.currentPaytagId = null; 
-  }
-  
-  modalCancelBtn.addEventListener('click', closeModal); 
+
+  function closeModal() { garageModal.classList.remove('open'); modalGarageError.textContent = ''; }
+  modalCancelBtn.addEventListener('click', closeModal);
   garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
-  
-  modalGarageInput.addEventListener('input', () => { modalGarageInput.value = modalGarageInput.value.replace(/\D/g, ''); modalGarageError.textContent = ''; });
-  
+
+  modalGarageInput.addEventListener('input', () => {
+    modalGarageInput.value = modalGarageInput.value.replace(/\D/g, '');
+    modalGarageError.textContent = '';
+  });
+
   modalSaveBtn.addEventListener('click', () => {
-    const val = modalGarageInput.value.trim(); 
-    if (!/^\d{3,5}$/.test(val)) { 
-        modalGarageError.textContent = 'Т/С должен содержать от 3 до 5 цифр'; 
-        return; 
-    }
-    
-    if (pendingRouteStr) {
-        routeTitle.textContent = pendingRouteStr;
-        vehicleNumber.textContent = val;
-        
-        if (window.currentPaytagId) {
-            const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
-            savedTags[window.currentPaytagId] = {
-                route: pendingRouteStr,
-                ts: val
-            };
-            localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
-            showToast("Маршрут сохранен", "success");
-        }
-        
-        saveTrip(pendingRouteStr, config.price, val);
-        drawQR();
-        startTimer();
-        
-        document.getElementById('mainPage').classList.remove('hidden');
-        pendingRouteStr = ""; 
-        
-    } else {
-        vehicleNumber.textContent = val; 
-        openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')'; 
-        
-        const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
-        if (trips.length > 0) {
-            trips[trips.length - 1].vehicle = val;
-            localStorage.setItem('farepay_trips', JSON.stringify(trips));
-        }
-    }
-    
+    const val = modalGarageInput.value.trim();
+    if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
+    vehicleNumber.textContent = val;
+    openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')';
     closeModal();
   });
 
+  // --- РАЗРАБОТЧИК ---
   const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
-  const devModal = document.getElementById('devModal');
-  const devReasons = document.getElementById('devReasons');
-  const devAnswer = document.getElementById('devAnswer');
-  const devCopyNote = document.getElementById('devCopyNote');
-  const devCancelBtn = document.getElementById('devCancelBtn');
-  const devTelegramBtn = document.getElementById('devTelegramBtn');
+  const devModal        = document.getElementById('devModal');
+  const devReasons      = document.getElementById('devReasons');
+  const devAnswer       = document.getElementById('devAnswer');
+  const devCopyNote     = document.getElementById('devCopyNote');
+  const devCancelBtn    = document.getElementById('devCancelBtn');
+  const devTelegramBtn  = document.getElementById('devTelegramBtn');
   const devTriggers = [document.getElementById('devTriggerDemo'), document.getElementById('devTriggerSelector'), document.getElementById('devTriggerMain')].filter(Boolean);
 
-  function resetDevModal() { devAnswer.classList.remove('show'); devAnswer.innerHTML = ''; devCopyNote.classList.remove('show'); devTelegramBtn.disabled = true; devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected')); }
+  function resetDevModal() {
+    devAnswer.classList.remove('show'); devAnswer.innerHTML = '';
+    devCopyNote.classList.remove('show'); devTelegramBtn.disabled = true;
+    devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+  }
   function openDevModal() { resetDevModal(); devModal.classList.add('open'); }
   function closeDevModal() { devModal.classList.remove('open'); }
-  devTriggers.forEach(btn => btn.addEventListener('click', openDevModal)); devCancelBtn.addEventListener('click', closeDevModal); devModal.addEventListener('click', (e) => { if (e.target === devModal) closeDevModal(); });
+
+  devTriggers.forEach(btn => btn.addEventListener('click', openDevModal));
+  devCancelBtn.addEventListener('click', closeDevModal);
+  devModal.addEventListener('click', (e) => { if (e.target === devModal) closeDevModal(); });
 
   function fallbackCopy(text) {
-    try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok; } catch (e) { return false; }
+    try {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select(); const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch (e) { return false; }
   }
-  function copyToClipboard(text) { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(() => fallbackCopy(text)); } else { fallbackCopy(text); } }
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(() => fallbackCopy(text)); }
+    else { fallbackCopy(text); }
+  }
 
   devReasons.querySelectorAll('.dev-reason').forEach(btn => {
     btn.addEventListener('click', () => {
-      devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected')); btn.classList.add('selected');
-      const problem = btn.dataset.problem || btn.textContent.trim(); const answer = btn.dataset.answer || '';
-      devAnswer.innerHTML = answer; devAnswer.classList.add('show'); copyToClipboard(problem + '\n\n(Из приложения «Оплата проезда»)'); devCopyNote.classList.add('show'); devTelegramBtn.disabled = false;
+      devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+      btn.classList.add('selected');
+      const problem = btn.dataset.problem || btn.textContent.trim();
+      const answer  = btn.dataset.answer || '';
+      devAnswer.innerHTML = answer; devAnswer.classList.add('show');
+      const fullText = problem + '\n\n(Из приложения «Оплата проезда»)';
+      copyToClipboard(fullText); devCopyNote.classList.add('show');
+      devTelegramBtn.disabled = false;
     });
   });
   devTelegramBtn.addEventListener('click', () => { window.open(TELEGRAM_URL, '_blank', 'noopener'); });
 
-  let audioCtx = null; let inspectorTimeout = null;
-  function getAudioCtx() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; } } if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+  // --- КОНТРОЛЁР ---
+  const inspectorPhrases = [
+    { emoji: "👮", text: "Ну что, заяц, прыгай в норку — за неоплаченный проезд! 🐰" },
+    { emoji: "🧐", text: "Так-так, а билетик-то где? Показываем!" },
+    { emoji: "🚨", text: "Ой, а оплата где? Платим или высаживаем!" },
+    { emoji: "👮", text: "Заяц! Быстро оплатил и поехал, не задерживаем!" },
+    { emoji: "🛑", text: "Без билета едем? А ну-ка на выход, заяц!" }
+  ];
+  let audioCtx = null;
+  let inspectorTimeout = null;
+  function getAudioCtx() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; } }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
   function playInspectorSound() {
-    const ctx = getAudioCtx(); if (!ctx) return; const now = ctx.currentTime;
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const now = ctx.currentTime;
     function whistle(startTime) {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine';
-      osc.frequency.setValueAtTime(1600, startTime); osc.frequency.linearRampToValueAtTime(2400, startTime + 0.05); osc.frequency.linearRampToValueAtTime(2400, startTime + 0.15); osc.frequency.linearRampToValueAtTime(1600, startTime + 0.25);
-      gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02); gain.gain.linearRampToValueAtTime(0.2, startTime + 0.2); gain.gain.linearRampToValueAtTime(0, startTime + 0.28);
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1600, startTime); osc.frequency.linearRampToValueAtTime(2400, startTime + 0.05);
+      osc.frequency.linearRampToValueAtTime(2400, startTime + 0.15); osc.frequency.linearRampToValueAtTime(1600, startTime + 0.25);
+      gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.2); gain.gain.linearRampToValueAtTime(0, startTime + 0.28);
       osc.connect(gain); gain.connect(ctx.destination); osc.start(startTime); osc.stop(startTime + 0.3);
     }
     whistle(now); whistle(now + 0.35);
   }
   function showInspector() {
-    playInspectorSound(); if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
-    const phrases = config.inspector_phrases || ["Ну что, заяц, прыгай в норку! 🐰"];
-    const phraseText = phrases[Math.floor(Math.random() * phrases.length)];
-    let emoji = "👮"; if (phraseText.match(/^\p{Emoji}/u)) { emoji = phraseText.match(/^\p{Emoji}/u)[0]; }
-    document.getElementById('inspectorEmoji').textContent = emoji; document.getElementById('inspectorText').textContent = phraseText.replace(/^\p{Emoji}\s*/u, '');
-    const modal = document.getElementById('inspectorModal'); modal.classList.add('show'); clearTimeout(inspectorTimeout); inspectorTimeout = setTimeout(() => modal.classList.remove('show'), 4000);
+    playInspectorSound();
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+    const phrase = inspectorPhrases[Math.floor(Math.random() * inspectorPhrases.length)];
+    document.getElementById('inspectorEmoji').textContent = phrase.emoji;
+    document.getElementById('inspectorText').textContent = phrase.text;
+    const modal = document.getElementById('inspectorModal');
+    modal.classList.add('show');
+    clearTimeout(inspectorTimeout);
+    inspectorTimeout = setTimeout(() => modal.classList.remove('show'), 4000);
   }
   document.getElementById('inspectorBtn').addEventListener('click', showInspector);
-  document.getElementById('inspectorModal').addEventListener('click', () => { document.getElementById('inspectorModal').classList.remove('show'); clearTimeout(inspectorTimeout); });
-
-  const themeMenu = document.getElementById('themeMenu'); const themeOpts = document.querySelectorAll('.theme-opt');
-  const savedTheme = localStorage.getItem('app-theme'); if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
-  window.toggleThemeMenu = function() { themeMenu.classList.toggle('open'); };
-  themeOpts.forEach(opt => { opt.addEventListener('click', () => { document.body.setAttribute('data-theme', opt.getAttribute('data-theme')); localStorage.setItem('app-theme', opt.getAttribute('data-theme')); themeMenu.classList.remove('open'); }); });
+  document.getElementById('inspectorModal').addEventListener('click', () => {
+    document.getElementById('inspectorModal').classList.remove('show');
+    clearTimeout(inspectorTimeout);
+  });
 
 });
 </script>
 </body>
-</html>
+</html>                                     </html>
