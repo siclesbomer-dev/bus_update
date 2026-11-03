@@ -56,10 +56,45 @@
   .hidden { display: none !important; }
 
   /* СКАНЕР */
-  #qr-reader { width: 100%; border-radius: 20px; overflow: hidden; border: none !important; }
-  #qr-reader video { border-radius: 20px; object-fit: cover; }
-  #qr-reader__scan_region { background: transparent !important; }
-  #qr-reader__dashboard { display: none !important; }
+  .scanner-box {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+    margin-bottom: 20px;
+  }
+
+  #qr-reader {
+    width: 100%;
+    height: 100%;
+  }
+  
+  #qr-reader video {
+    object-fit: cover !important;
+    border-radius: 20px;
+  }
+
+  /* Красный лазер */
+  .scanner-laser {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 3px;
+    background: #ff3333;
+    box-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333;
+    animation: scanAnimation 2s infinite linear;
+    z-index: 5;
+    display: none;
+  }
+  @keyframes scanAnimation {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+  }
 
   /* МОДАЛКИ */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
@@ -176,11 +211,18 @@
     </div>
   </section>
 
+  <!-- ЭКРАН СКАНЕРА -->
   <section id="scannerScreen" class="board-screen hidden">
     <div class="board-card" style="padding: 20px;">
       <h2 style="margin-bottom: 10px;">📷 Сканер Т/С</h2>
-      <p style="font-size: 14px; margin-bottom: 15px;">Наведите камеру на QR-код в салоне автобуса</p>
-      <div id="qr-reader"></div>
+      <p style="font-size: 14px; margin-bottom: 15px;">Наведите камеру на QR-код в салоне</p>
+      
+      <div class="scanner-box">
+        <div id="qr-reader"></div>
+        <div class="scanner-laser" id="scannerLaser"></div>
+        <button id="startCameraBtn" class="pay-btn" style="position: absolute; z-index: 10; width: 80%; margin: 0;">Включить камеру</button>
+      </div>
+      
       <div style="margin-top: 20px;">
         <button class="garage-link" onclick="stopScanner(); document.getElementById('scannerScreen').classList.add('hidden'); document.getElementById('demoScreen').style.display='flex'; updateUI();">← Отмена</button>
       </div>
@@ -250,7 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isPremium = localStorage.getItem('farepay_premium') === 'true';
   const COOLDOWN_MS = 5 * 60 * 1000;
-  let html5QrcodeScanner = null;
+  
+  // Переменная для библиотеки сканера
+  let html5QrCode = null;
 
   function updateUI() {
     const payBtn = document.getElementById('payButton');
@@ -287,66 +331,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- СКАНЕР ---
   function startScanner() {
     document.getElementById('demoScreen').style.display = 'none';
     document.getElementById('scannerScreen').classList.remove('hidden');
-
-    html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader", 
-      { fps: 10, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 },
-      false
-    );
-
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    
+    // Показываем кнопку включения камеры, скрываем лазер
+    document.getElementById('startCameraBtn').style.display = 'inline-flex';
+    document.getElementById('scannerLaser').style.display = 'none';
   }
 
   function stopScanner() {
-    if (html5QrcodeScanner) {
-      html5QrcodeScanner.clear().catch(error => {
-          console.error("Failed to clear html5QrcodeScanner. ", error);
-      });
-      html5QrcodeScanner = null;
+    if (html5QrCode) {
+      try {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            html5QrCode = null;
+        }).catch(e => console.log(e));
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
+
+  // Кнопка "Включить камеру"
+  document.getElementById('startCameraBtn').addEventListener('click', () => {
+    document.getElementById('startCameraBtn').style.display = 'none';
+    document.getElementById('scannerLaser').style.display = 'block';
+
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("qr-reader");
+    }
+
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch((err) => {
+            alert("Ошибка доступа к камере. Разрешите камеру в настройках браузера.");
+            document.getElementById('startCameraBtn').style.display = 'inline-flex';
+            document.getElementById('scannerLaser').style.display = 'none';
+        });
+  });
 
   function onScanSuccess(decodedText, decodedResult) {
     stopScanner();
     
-    // Умный парсинг данных из QR-кода
+    // Умный парсинг
     let extractedTC = '—';
     let transportName = 'Автобус';
     let routeNumber = '';
 
-    // Ищем Т/С (3-5 цифр)
     let tsMatch = decodedText.match(/\d{3,5}/);
     if (tsMatch) extractedTC = tsMatch[0];
 
-    // Ищем Троллейбус
     if (decodedText.toLowerCase().includes('троллейбус') || decodedText.toLowerCase().includes('troll')) {
         transportName = 'Троллейбус';
     }
 
-    // Ищем маршрут
     let routeMatch = decodedText.match(/(?:маршрут|автобус|троллейбус|№|bus|route)[_\s-]?(\d{1,3})/i);
     if (routeMatch) {
         routeNumber = routeMatch[1];
     } else {
-        // Если не нашли явного указателя, ищем просто 1-2 цифры
         let possibleRoute = decodedText.match(/\b\d{1,2}\b/);
         if (possibleRoute && possibleRoute[0] !== extractedTC) routeNumber = possibleRoute[0];
     }
 
-    // Устанавливаем заголовок
     if (routeNumber) {
         document.getElementById('routeTitle').textContent = `${transportName} №${routeNumber}`;
     } else {
         document.getElementById('routeTitle').textContent = transportName;
     }
     
-    // Устанавливаем Т/С
     document.getElementById('vehicleNumber').textContent = extractedTC;
     
-    // Показываем экран оплаты
     document.getElementById('scannerScreen').classList.add('hidden');
     document.getElementById('mainPage').classList.remove('hidden');
     
@@ -355,10 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startTimer();
   }
 
-  function onScanFailure(error) {
-    // Игнорируем
-  }
-
+  // --- ОСТАЛЬНАЯ ЛОГИКА ---
   updateUI();
 
   fetch(CONFIG_URL + '?t=' + Date.now())
@@ -409,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startScanner();
   });
 
+  // Остальные функции (история, таймер, qr, инспектор) остались без изменений...
   document.getElementById('historyBtn').addEventListener('click', () => {
     const historyList = document.getElementById('historyList');
     const trips = JSON.parse(localStorage.getItem('farepay_trips') || '[]');
