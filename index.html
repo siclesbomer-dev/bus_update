@@ -400,6 +400,22 @@ document.addEventListener('DOMContentLoaded', () => {
     stopScanner();
     document.getElementById('scannerScreen').classList.add('hidden');
     
+    const cacheKey = decodedText.trim();
+
+    // --- 0. ГЛАВНАЯ ПРОВЕРКА: ИЩЕМ В КЭШЕ (ДЛЯ ЛЮБОГО QR) ---
+    const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
+    
+    if (savedTags[cacheKey]) {
+        alert("✅ НАЙДЕНО В КЭШЕ! Ключ: " + cacheKey); // ОТЛАДКА
+        document.getElementById('mainPage').classList.remove('hidden');
+        document.getElementById('routeTitle').textContent = savedTags[cacheKey].route;
+        document.getElementById('vehicleNumber').textContent = savedTags[cacheKey].ts;
+        saveTrip(savedTags[cacheKey].route, config.price, savedTags[cacheKey].ts);
+        drawQR();
+        startTimer();
+        return;
+    }
+
     // --- 1. ОБРАБОТКА СБП КОДОВ ---
     if (decodedText.toLowerCase().includes('nspk.ru') || decodedText.toLowerCase().includes('qr.bilet')) {
         
@@ -410,26 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             const match = decodedText.match(/paytagid=([^&]+)/i);
             if (match) paytagId = match[1];
-        }
-
-        // Используем Trim на всякий случай
-        const cacheKey = (paytagId || decodedText).trim();
-
-        // Проверка умного кэша
-        const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
-        
-        if (savedTags[cacheKey]) {
-            alert("✅ НАЙДЕНО В КЭШЕ! Ключ: " + cacheKey); // ОТЛАДКА
-            document.getElementById('mainPage').classList.remove('hidden');
-            document.getElementById('routeTitle').textContent = savedTags[cacheKey].route;
-            document.getElementById('vehicleNumber').textContent = savedTags[cacheKey].ts;
-            saveTrip(savedTags[cacheKey].route, config.price, savedTags[cacheKey].ts);
-            drawQR();
-            startTimer();
-            return;
-        } else {
-            // Если не нашли, выводим отладку: какой ключ и что есть в базе
-            alert("❌ НЕ НАЙДЕНО В КЭШЕ.\nИщу ключ: " + cacheKey + "\nВ памяти есть: " + Object.keys(savedTags).join(", "));
         }
 
         // Если в кэше нет, пробуем API
@@ -447,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const route = `${trip.vehicleTypeName} №${trip.routeNumber}`;
                     const tsNumber = trip.vehicleNumber || "—";
 
+                    // Сохраняем успешный ответ в кэш
                     savedTags[cacheKey] = { route: route, ts: tsNumber };
                     localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
 
@@ -469,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return; 
     }
 
-    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
+    // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ (И КОРОТКИХ ССЫЛОК) ---
     let extractedTC = '—';
     let transportName = 'Автобус';
     let routeNumber = '';
@@ -495,7 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
         drawQR(); 
         startTimer();
     } else {
-        window.currentPaytagId = decodedText.trim(); 
+        // Если это непонятный код (например, короткая ссылка qrco.de), 
+        // сохраняем его как ключ и идем в ручной режим
+        window.currentPaytagId = cacheKey; 
         document.getElementById('manualScreen').classList.remove('hidden');
     }
   }
@@ -666,8 +665,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
             alert("💾 СОХРАНЕНО! Ключ: " + window.currentPaytagId); // ОТЛАДКА
-        } else {
-            alert("⚠️ ОШИБКА: window.currentPaytagId ПУСТОЙ! Не могу сохранить."); // ОТЛАДКА
         }
         
         saveTrip(pendingRouteStr, config.price, val);
