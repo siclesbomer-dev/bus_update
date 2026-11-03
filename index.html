@@ -402,50 +402,69 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. ОБРАБОТКА СБП КОДОВ ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
+        
+        // Вытаскиваем paytagId на уровень выше, чтобы он был доступен в catch
+        let paytagId = null;
         try {
             const url = new URL(decodedText);
-            const paytagId = url.searchParams.get("paytagid");
-            if (!paytagId) throw new Error("Нет paytagid в ссылке");
+            paytagId = url.searchParams.get("paytagid") || url.searchParams.get("payTagId");
+        } catch (e) {
+            // Если URL битый, попробуем регуляркой
+            const match = decodedText.match(/paytagid=([^&]+)/i);
+            if (match) paytagId = match[1];
+        }
 
-            const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
-            if (savedTags[paytagId]) {
-                document.getElementById('mainPage').classList.remove('hidden');
-                document.getElementById('routeTitle').textContent = savedTags[paytagId].route;
-                document.getElementById('vehicleNumber').textContent = savedTags[paytagId].ts;
-                saveTrip(savedTags[paytagId].route, config.price, savedTags[paytagId].ts);
-                drawQR();
-                startTimer();
-                return;
-            }
+        // Если вообще ничего не нашли, используем сам текст как ключ
+        const cacheKey = paytagId || decodedText;
 
-            const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
-            const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
-            
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Ошибка сети');
-            const data = await response.json();
-
-            // ЖЕСТКАЯ ПРОВЕРКА: Если есть маршрут и ТС, и они не пустые
-            if (data.responseStatus === 'OK' && data.result && data.result[0] && data.result[0].routeNumber && data.result[0].vehicleTypeName) {
-                const trip = data.result[0];
-                const route = `${trip.vehicleTypeName} ${trip.routeNumber}`;
-                const tsNumber = trip.vehicleNumber || "—";
-
-                document.getElementById('mainPage').classList.remove('hidden');
-                document.getElementById('routeTitle').textContent = route;
-                document.getElementById('vehicleNumber').textContent = tsNumber;
-                saveTrip(route, config.price, tsNumber);
-                drawQR();
-                startTimer();
-                return;
-            }
-            throw new Error("API вернуло неполные данные");
-        } catch (error) {
-            console.error("Ошибка API НСПК:", error);
-            window.currentPaytagId = url.searchParams.get("paytagid");
-            document.getElementById('manualScreen').classList.remove('hidden');
+        // Проверка умного кэша
+        const savedTags = JSON.parse(localStorage.getItem('farepay_saved_tags') || '{}');
+        if (savedTags[cacheKey]) {
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('routeTitle').textContent = savedTags[cacheKey].route;
+            document.getElementById('vehicleNumber').textContent = savedTags[cacheKey].ts;
+            saveTrip(savedTags[cacheKey].route, config.price, savedTags[cacheKey].ts);
+            drawQR();
+            startTimer();
             return;
         }
+
+        // Если в кэше нет, пробуем API
+        if (paytagId) {
+            try {
+                const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
+                const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Ошибка сети');
+                const data = await response.json();
+
+                if (data.responseStatus === 'OK' && data.result && data.result[0] && data.result[0].routeNumber && data.result[0].vehicleTypeName) {
+                    const trip = data.result[0];
+                    const route = `${trip.vehicleTypeName} ${trip.routeNumber}`;
+                    const tsNumber = trip.vehicleNumber || "—";
+
+                    // ОБЯЗАТЕЛЬНО СОХРАНЯЕМ В КЭШ, чтобы работало даже без интернета
+                    savedTags[cacheKey] = { route: route, ts: tsNumber };
+                    localStorage.setItem('farepay_saved_tags', JSON.stringify(savedTags));
+
+                    document.getElementById('mainPage').classList.remove('hidden');
+                    document.getElementById('routeTitle').textContent = route;
+                    document.getElementById('vehicleNumber').textContent = tsNumber;
+                    saveTrip(route, config.price, tsNumber);
+                    drawQR();
+                    startTimer();
+                    return;
+                }
+            } catch (error) {
+                console.error("Ошибка API НСПК:", error);
+            }
+        }
+
+        // Если API не ответило (или упало), переходим к ручному выбору
+        window.currentPaytagId = cacheKey; // Теперь тут всегда будет значение
+        document.getElementById('manualScreen').classList.remove('hidden');
+        return; 
     }
 
     // --- 2. ОБРАБОТКА ОБЫЧНЫХ QR КОДОВ ---
@@ -465,7 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
         routeNumber = routeMatch[1];
     }
 
-    // Если мы четко распознали и маршрут, и Т/С — показываем билет
     if (extractedTC !== '—' && routeNumber !== '') {
         const route = `${transportName} ${routeNumber}`;
         document.getElementById('mainPage').classList.remove('hidden');
@@ -475,8 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawQR(); 
         startTimer();
     } else {
-        // Если не распознали — в ручной режим!
-        window.currentPaytagId = null;
+        window.currentPaytagId = decodedText; // Сохраняем сам текст как ключ
         document.getElementById('manualScreen').classList.remove('hidden');
     }
   }
