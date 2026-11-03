@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const routeEl = document.getElementById('routeTitle');
     const vehicleEl = document.getElementById('vehicleNumber');
 
-    // --- 1. ОБРАБОТКА СБП КОДОВ (ЧЕРЕЗ API НСПК) ---
+    // --- 1. ОБРАБОТКА СБП КОДОВ (ЧЕРЕЗ API НСПК И ТВОЙ ВОРКЕР) ---
     if (decodedText.includes('nspk.ru') || decodedText.includes('qr.bilet')) {
         try {
             const url = new URL(decodedText);
@@ -382,9 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
             routeEl.textContent = "Считываем данные...";
             vehicleEl.textContent = "Ожидайте";
 
-            // Запрос к официальному API НСПК через CORS-прокси
             const apiUrl = `https://qr.bilet.nspk.ru/api/v1/pay-tags/tariff?payTagId=${paytagId}&s=qr&m=t`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+
+            // Твой личный пуленепробиваемый прокси (Cloudflare Worker)
+            const proxyUrl = `https://bus-proxy.siclesbomer-6ee.workers.dev/?url=${encodeURIComponent(apiUrl)}`;
             
             const response = await fetch(proxyUrl);
             if (!response.ok) throw new Error('Ошибка сети');
