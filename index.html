@@ -5,58 +5,99 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Оплата проезда</title>
 <style>
-  /* --- ТЕМЫ --- */
-  :root, [data-theme="blue"] { --bg: #f2f4f7; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #667; --accent: #0288d1; --btn-gradient: linear-gradient(90deg, #29b6f6, #0288d1); --btn-shadow: rgba(41, 182, 246, 0.3); --header-bg: #1a9be8; --wave-top: #0c75b8; --border-color: #e0e0e0; --input-bg: #f8f9fb; --modal-bg: #ffffff; --shadow: 0 10px 40px rgba(0,0,0,0.06); }
-  [data-theme="orange"] { --bg: #0a0a0c; --card-bg: #141416; --text-main: #ffffff; --text-muted: #8b8b93; --accent: #ff6b00; --btn-gradient: linear-gradient(90deg, #ff6b00, #e65c00); --btn-shadow: rgba(255, 107, 0, 0.4); --header-bg: #141416; --wave-top: #1f1f22; --border-color: #2a2a2e; --input-bg: #1f1f22; --modal-bg: #141416; --shadow: 0 20px 50px rgba(0,0,0,0.6); }
-  [data-theme="neon"] { --bg: #000000; --card-bg: #0d0d0d; --text-main: #00ff66; --text-muted: #008833; --accent: #00ff66; --btn-gradient: linear-gradient(90deg, #00ff66, #00cc55); --btn-shadow: rgba(0, 255, 102, 0.3); --header-bg: #0d0d0d; --wave-top: #002200; --border-color: #00ff6633; --input-bg: #111111; --modal-bg: #0d0d0d; --shadow: 0 10px 40px rgba(0, 255, 102, 0.15); }
-  [data-theme="purple"] { --bg: #0f0c29; --card-bg: #1a1638; --text-main: #ffffff; --text-muted: #8a80b3; --accent: #9d4edd; --btn-gradient: linear-gradient(90deg, #c77dff, #9d4edd); --btn-shadow: rgba(157, 78, 221, 0.4); --header-bg: #1a1638; --wave-top: #2d2559; --border-color: #2d2559; --input-bg: #221c46; --modal-bg: #1a1638; --shadow: 0 10px 40px rgba(0,0,0,0.4); }
-  [data-theme="cherry"] { --bg: #1a0b12; --card-bg: #2a121d; --text-main: #ffb3c6; --text-muted: #cc8099; --accent: #ff4d6d; --btn-gradient: linear-gradient(90deg, #ff4d6d, #c9184a); --btn-shadow: rgba(255, 77, 109, 0.4); --header-bg: #2a121d; --wave-top: #42182b; --border-color: #42182b; --input-bg: #361624; --modal-bg: #2a121d; --shadow: 0 10px 40px rgba(0,0,0,0.5); }
+  /* ЕДИНАЯ ТЕМА (Голубая) */
+  :root {
+    --bg: #f2f4f7; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #667;
+    --accent: #0288d1; --btn-gradient: linear-gradient(90deg, #29b6f6, #0288d1);
+    --btn-shadow: rgba(41, 182, 246, 0.3); --header-bg: #1a9be8; --wave-top: #0c75b8;
+    --border-color: #e0e0e0; --input-bg: #f8f9fb; --modal-bg: #ffffff;
+    --shadow: 0 10px 40px rgba(0,0,0,0.06); --qr-bg: #ffffff;
+  }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-  body { margin: 0; background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
 
-  .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
-  .theme-menu { position: fixed; top: 75px; right: 20px; z-index: 9999; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px; box-shadow: var(--shadow); display: none; flex-direction: column; gap: 8px; }
-  .theme-menu.open { display: flex; }
-  .theme-opt { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-  .theme-opt[data-theme="blue"] { background: #29b6f6; } .theme-opt[data-theme="orange"] { background: #ff6b00; } .theme-opt[data-theme="neon"] { background: #00ff66; } .theme-opt[data-theme="purple"] { background: #9d4edd; } .theme-opt[data-theme="cherry"] { background: #ff4d6d; }
-
+  /* Шапка */
   .header-wave { position: relative; height: 190px; background: var(--header-bg); overflow: hidden; }
-  .header-wave::before { content: ""; position: absolute; top: -50px; left: -10%; width: 120%; height: 150px; background: var(--wave-top); border-radius: 0 0 50% 50% / 0 0 100% 100%; }
-  .header-wave::after { content: ""; position: absolute; bottom: -10px; left: -10%; width: 120%; height: 120px; background: var(--bg); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1; }
-  .header-content { position: relative; z-index: 2; text-align: center; color: #fff; font-size: 24px; font-weight: 500; padding-top: 85px; }
+  .header-wave::before {
+    content: ""; position: absolute; top: -50px; left: -10%; width: 120%; height: 150px;
+    background: var(--wave-top); border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  }
+  .header-wave::after {
+    content: ""; position: absolute; bottom: -10px; left: -10%; width: 120%; height: 120px;
+    background: var(--bg); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1;
+  }
+  .header-content {
+    position: relative; z-index: 2; text-align: center; color: #fff;
+    font-size: 24px; font-weight: 500; padding-top: 85px; letter-spacing: 0.5px;
+  }
 
+  /* Основной контент */
   .main-container { padding: 0 20px 40px; max-width: 440px; margin: -30px auto 0; position: relative; z-index: 10; text-align: center; }
-  .qr-logo { width: 90px; height: 90px; background: var(--card-bg); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
-  .qr-logo-inner { width: 80px; height: 80px; background: var(--btn-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -2px; }
+  .qr-logo {
+    width: 90px; height: 90px; background: var(--card-bg); border-radius: 20px;
+    margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .qr-logo-inner {
+    width: 80px; height: 80px; background: var(--btn-gradient);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -2px;
+  }
   .route-title { font-size: 26px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
   .price { font-size: 58px; font-weight: 800; margin: 0 0 20px; letter-spacing: -1px; color: var(--text-main); }
   .info-block { font-size: 18px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
   .info-block span { color: var(--text-main); font-weight: 600; }
-  .qr-container { margin: 0 auto 24px; width: 220px; height: 220px; background: #ffffff; border-radius: 20px; padding: 12px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; }
+  .qr-container {
+    margin: 0 auto 24px; width: 220px; height: 220px; background: var(--qr-bg);
+    border-radius: 20px; padding: 12px; box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center;
+  }
   .qr-container canvas { display: block; width: 100%; height: 100%; border-radius: 12px; }
-  .timer-container { display: inline-block; background: var(--input-bg); border-radius: 12px; padding: 8px 24px; margin-bottom: 24px; color: var(--text-muted); font-size: 16px; font-weight: 500; border: 1px solid var(--border-color); }
+  .timer-container {
+    display: inline-block; background: var(--input-bg); border-radius: 12px;
+    padding: 8px 24px; margin-bottom: 24px; color: var(--text-muted); font-size: 16px; font-weight: 500;
+    border: 1px solid var(--border-color);
+  }
   .timer-value { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 
-  .pay-btn { width: 100%; border: 0; border-radius: 16px; padding: 18px 20px; font-size: 20px; font-weight: 600; color: #fff; background: var(--btn-gradient); cursor: pointer; box-shadow: 0 6px 20px var(--btn-shadow); margin-bottom: 10px; transition: transform 0.2s, opacity 0.2s; }
+  .pay-btn {
+    width: 100%; border: 0; border-radius: 16px; padding: 18px 20px;
+    font-size: 20px; font-weight: 600; color: #fff; background: var(--btn-gradient);
+    cursor: pointer; box-shadow: 0 6px 20px var(--btn-shadow); margin-bottom: 10px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
   .pay-btn:active { transform: scale(0.98); opacity: 0.8; }
-  
-  .banana-text { display: inline-block; margin-bottom: 20px; font-size: 15px; color: var(--text-muted); font-weight: 600; cursor: pointer; opacity: 0.5; transition: 0.3s; user-select: none; padding: 5px 10px; }
-  .banana-text:hover { opacity: 1; color: var(--accent); transform: scale(1.05); }
+  .pay-btn.locked { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
+  .pay-btn.locked:active { transform: none; }
 
-  .status-badge { display: none; background: rgba(46, 125, 50, 0.15); color: #2e7d32; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 16px; margin-bottom: 20px; border: 1px solid #2e7d3233; }
-  .progress-wrap { display: none; margin-top: 20px; }
-  .progress-track { height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
-  .progress-bar { width: 0%; height: 100%; background: var(--btn-gradient); transition: width .08s linear; }
-  .progress-text { margin-top: 10px; font-size: 15px; color: var(--text-muted); }
+  .cooldown-msg {
+    display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4;
+  }
 
+  .status-badge {
+    display: none; background: rgba(46, 125, 50, 0.15); color: #2e7d32;
+    padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 16px;
+    margin-bottom: 20px; border: 1px solid #2e7d3233;
+  }
+
+  /* Экраны */
   .selector-screen, .demo-screen { min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .selector-card, .demo-card { width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color); }
+  .selector-card, .demo-card {
+    width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px;
+    padding: 40px 28px; box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border-color);
+  }
   .selector-card h2, .demo-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
   .selector-card p, .demo-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
-
   .type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .type-btn, .route-btn { border: 1px solid var(--border-color); border-radius: 12px; padding: 15px 12px; font-size: 17px; cursor: pointer; background: var(--input-bg); color: var(--text-main); font-weight: 600; transition: all 0.2s; }
+  .type-btn, .route-btn {
+    border: 1px solid var(--border-color); border-radius: 12px; padding: 15px 12px; font-size: 17px;
+    cursor: pointer; background: var(--input-bg); color: var(--text-main); font-weight: 600; transition: all 0.2s;
+  }
   .type-btn:active, .route-btn:active { opacity: 0.7; transform: scale(0.97); }
   .type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px var(--btn-shadow); }
   .route-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -65,84 +106,161 @@
   .result-title { font-size: 32px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; color: var(--text-main); }
   .result-subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 17px; }
 
-  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  /* Модальные окна */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
   .modal-overlay.open { display: flex; }
-  .modal-card { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow); }
+  .modal-card {
+    background: var(--modal-bg); border: 1px solid var(--border-color);
+    border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; box-shadow: var(--shadow);
+  }
   .modal-card h3 { margin: 0 0 12px; font-size: 22px; color: var(--text-main); }
   .modal-card p { margin: 0 0 20px; font-size: 15px; color: var(--text-muted); }
-  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px; outline: none; margin-bottom: 16px; text-align: center; background: var(--input-bg); color: var(--text-main); }
+  .modal-input {
+    width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px;
+    outline: none; margin-bottom: 16px; letter-spacing: 1px; text-align: center; background: var(--input-bg);
+    color: var(--text-main); transition: border-color 0.2s;
+  }
   .modal-input:focus { border-color: var(--accent); }
   .modal-actions { display: flex; gap: 12px; }
   .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .modal-btn:active { opacity: 0.7; transform: scale(0.97); }
   .modal-btn.cancel { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
   .modal-btn.save { background: var(--btn-gradient); color: #fff; }
   .modal-error { color: #ff4d4d; font-size: 14px; margin-bottom: 12px; min-height: 18px; font-weight: 600; }
-  .garage-link { display: inline-block; margin-top: 24px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
-  .dev-trigger { display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
 
-  /* ПРАНК-ЭКРАН И ОКНО ПОЛИЦИИ */
-  #prankOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: none; flex-direction: column; padding: 20px; font-family: monospace; color: #fff; font-size: 15px; font-weight: bold; }
-  #prankOverlay.active { display: flex; }
-  #prankOverlay.red { background: #b30000; }
-  .terminal-line { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.1s forwards; }
-  .warning { color: #ffff00; }
-  .error { background: #fff; color: #b30000; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-  @keyframes fadeIn { to { opacity: 1; } }
+  .garage-link {
+    display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted);
+    background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; transition: 0.2s;
+  }
+  .garage-link:hover { color: var(--accent); }
 
-  #policeModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 100000; display: none; align-items: center; justify-content: center; padding: 20px; }
-  #policeModal.active { display: flex; }
-  .police-card { background: #ffffff; border-radius: 28px; padding: 40px 30px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.8) translateY(50px); opacity: 0; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border: 4px solid #ff3b30; }
-  @keyframes popIn { to { transform: scale(1) translateY(0); opacity: 1; } }
-  .police-emoji { font-size: 85px; margin-bottom: 15px; animation: wobble 2s infinite; display: inline-block; }
-  @keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
-  .police-title { font-size: 28px; font-weight: 900; color: #ff3b30; text-transform: uppercase; line-height: 1.2; margin-bottom: 10px; font-family: -apple-system, sans-serif; }
-  .police-sub { font-size: 16px; color: #333; font-weight: 600; font-family: -apple-system, sans-serif; }
-  .police-btn { margin-top: 25px; width: 100%; padding: 16px; border: none; border-radius: 16px; background: #ff3b30; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: -apple-system, sans-serif; }
-  .police-btn:active { transform: scale(0.96); background: #d32f2f; }
+  /* Разработчик */
+  .dev-trigger {
+    display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted);
+    background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; transition: 0.2s;
+  }
+  .dev-trigger:hover { color: var(--accent); }
+
+  .dev-modal-card {
+    background: var(--modal-bg); border: 1px solid var(--border-color);
+    border-radius: 22px; padding: 26px 22px 22px; width: 92%; max-width: 400px;
+    text-align: left; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto;
+  }
+  .dev-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dev-avatar {
+    width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0; background: var(--btn-gradient);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 20px; letter-spacing: -1px;
+    box-shadow: 0 4px 10px var(--btn-shadow);
+  }
+  .dev-modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+  .dev-modal-header .dev-username { font-size: 13px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+  .dev-modal-sub { margin: 0 0 16px; font-size: 14px; color: var(--text-muted); line-height: 1.45; }
+
+  .dev-reasons { display: grid; gap: 10px; margin-bottom: 16px; }
+  .dev-reason {
+    display: flex; align-items: flex-start; gap: 10px; text-align: left;
+    background: var(--input-bg); border: 2px solid transparent; border-radius: 14px;
+    padding: 12px 14px; cursor: pointer; transition: all 0.2s;
+    font-size: 15px; color: var(--text-main); font-weight: 600; line-height: 1.3;
+  }
+  .dev-reason:hover { border-color: var(--border-color); }
+  .dev-reason.selected { border-color: var(--accent); background: var(--card-bg); box-shadow: 0 4px 15px var(--btn-shadow); }
+  .dev-reason .dev-reason-ico {
+    width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px;
+    background: var(--card-bg); color: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 14px; font-weight: 800; border: 1px solid var(--border-color);
+  }
+  .dev-reason.selected .dev-reason-ico { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .dev-reason small { display: block; font-weight: 500; color: var(--text-muted); font-size: 12.5px; margin-top: 2px; }
+
+  .dev-answer {
+    display: none; margin-bottom: 14px; padding: 14px 16px;
+    background: var(--input-bg); border-left: 4px solid var(--accent);
+    border-radius: 12px; font-size: 14px; color: var(--text-main); line-height: 1.5;
+  }
+  .dev-answer.show { display: block; }
+  .dev-answer strong { color: var(--accent); }
+  .dev-copy-note {
+    display: none; background: rgba(46, 125, 50, 0.15); color: #4caf50; border-radius: 10px;
+    padding: 9px 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px; text-align: center; border: 1px solid #4caf5033;
+  }
+  .dev-copy-note.show { display: block; }
+  .dev-actions { display: flex; gap: 10px; }
+  .dev-actions .modal-btn { font-size: 16px; }
+  .dev-actions .modal-btn.telegram { background: var(--btn-gradient); color: #fff; box-shadow: 0 6px 18px var(--btn-shadow); }
+  .dev-actions .modal-btn.telegram:disabled { opacity: .5; box-shadow: none; cursor: default; }
 </style>
 </head>
 <body>
 
-  <div class="theme-toggle" onclick="toggleThemeMenu()">🎨</div>
-  <div class="theme-menu" id="themeMenu">
-    <div class="theme-opt" data-theme="blue"></div><div class="theme-opt" data-theme="orange"></div><div class="theme-opt" data-theme="neon"></div><div class="theme-opt" data-theme="purple"></div><div class="theme-opt" data-theme="cherry"></div>
-  </div>
-
   <section id="demoScreen" class="demo-screen">
     <div class="demo-card">
       <h2>Оплата проезда</h2>
-      <p>Нажмите кнопку ниже, чтобы запустить оплату проезда</p>
-      <button id="payButton" class="pay-btn">Оплатить</button>
-      <span id="bananaTrigger" class="banana-text">для банана🍌</span>
-      <div id="progressWrap" class="progress-wrap"><div class="progress-track"><div id="progressBar" class="progress-bar"></div></div><div id="progressText" class="progress-text">Подготовка…</div></div>
-      <div><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
+      <p id="accessText">Для доступа к оплате требуется инвайт-код.</p>
+      
+      <button id="payButton" class="pay-btn locked">🔒 Введите инвайт-код</button>
+      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
+      
+      <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px;">🎟️ У меня нету кода (Купить)</button>
+      
+      <div id="progressWrap" class="progress-wrap hidden" style="margin-top: 20px;">
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <div id="progressText" class="progress-text">Подготовка…</div>
+      </div>
+      <div style="margin-top: 20px;"><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
     </div>
   </section>
 
   <section id="resultScreen" class="demo-screen result-screen hidden">
-    <div class="demo-card"><div class="result-title">Процесс<br>выполнен</div><div class="result-subtitle">Переход к выбору транспорта…</div></div>
+    <div class="demo-card">
+      <div class="result-title">Процесс<br>выполнен</div>
+      <div class="result-subtitle">Переход к выбору транспорта…</div>
+    </div>
   </section>
 
   <section id="selectorScreen" class="selector-screen hidden">
     <div class="selector-card">
-      <h2>Выберите транспорт</h2><p>Сначала выберите тип, затем маршрут</p>
-      <div class="type-buttons"><button class="type-btn" data-type="bus">Автобус</button><button class="type-btn" data-type="trolleybus">Троллейбус</button></div>
+      <h2>Выберите транспорт</h2>
+      <p>Сначала выберите тип, затем маршрут</p>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="bus">Автобус</button>
+        <button class="type-btn" data-type="trolleybus">Троллейбус</button>
+      </div>
       <div id="routeButtons" class="route-buttons hidden"></div>
       <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
     </div>
   </section>
 
   <div id="mainPage" class="hidden">
-    <header class="header-wave"><div class="header-content">— Оплата проезда —</div></header>
+    <header class="header-wave">
+      <div class="header-content">— Оплата проезда —</div>
+    </header>
+
     <main class="main-container">
       <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
+
       <div id="routeTitle" class="route-title">Автобус №18</div>
-      <div class="price">53 ₽</div>
-      <div class="info-block"><span id="payDate">—</span><br>Т/С: <span id="vehicleNumber">—</span></div>
-      <div class="qr-container"><canvas id="qrCanvas" width="400" height="400"></canvas></div>
-      <div class="timer-container">Действителен: <span id="timer" class="timer-value">00:00</span></div>
-      <div id="status" class="status-badge">Оплата подтверждена</div>
-      <button id="confirmPayBtn" class="pay-btn">Оплатить</button>
+      <div class="price" id="priceDisplay">53 ₽</div>
+
+      <div class="info-block">
+        <span id="payDate">—</span><br>
+        Т/С: <span id="vehicleNumber">—</span>
+      </div>
+
+      <div class="qr-container">
+        <canvas id="qrCanvas" width="400" height="400" aria-label="QR-код"></canvas>
+      </div>
+
+      <div class="timer-container">
+        Действителен: <span id="timer" class="timer-value">00:00</span>
+      </div>
+
+      <div id="status" class="status-badge" style="display: inline-block;">Оплата подтверждена</div>
+
       <button id="openGarageModalBtn" class="garage-link">Спросили т/с?</button>
       <div><button id="devTriggerMain" class="dev-trigger">Написать разработчику</button></div>
     </main>
@@ -150,130 +268,158 @@
 
   <div id="garageModal" class="modal-overlay">
     <div class="modal-card">
-      <h3>Т/С (Гаражный номер)</h3><p>Введите номер, чтобы добавить его к чеку</p>
+      <h3>Т/С (Гаражный номер)</h3>
+      <p>Введите номер, чтобы добавить его к чеку</p>
       <input id="modalGarageInput" class="modal-input" type="tel" inputmode="numeric" placeholder="Например: 3818" maxlength="5">
       <div id="modalGarageError" class="modal-error"></div>
-      <div class="modal-actions"><button id="modalCancelBtn" class="modal-btn cancel">Отмена</button><button id="modalSaveBtn" class="modal-btn save">Сохранить</button></div>
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="modal-btn cancel">Отмена</button>
+        <button id="modalSaveBtn" class="modal-btn save">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="inviteModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>🎟️ Доступ по инвайту</h3>
+      <p>Введите код <b>FARE-XXXX-XXXX</b>. Доступ сохранится в вашем браузере.</p>
+      <input id="inviteInput" class="modal-input" type="text" placeholder="FARE-XXXX-XXXX" style="text-transform: uppercase;">
+      <div id="inviteError" class="modal-error"></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeInviteModal()">Отмена</button>
+        <button class="modal-btn save" onclick="checkInviteCode()">Проверить</button>
+      </div>
     </div>
   </div>
 
   <div id="devModal" class="modal-overlay">
     <div class="dev-modal-card">
-      <div class="dev-modal-header"><div class="dev-avatar">DV</div><div><h3>Написать разработчику</h3><div class="dev-username">@Demon_of_latvia</div></div></div>
-      <p class="dev-modal-sub">Выберите тему — появится подсказка, а текст скопируется.</p>
-      <div id="devReasons" class="dev-reasons">
-        <button class="dev-reason" data-problem="Не работает на iPhone" data-answer="На <strong>iOS</strong> оплата может не открываться. Текст скопирован, отправьте в Telegram."><span class="dev-reason-ico">1</span><span>Не работает на iPhone</span></button>
-        <button class="dev-reason" data-problem="Где найти Т/С" data-answer="Номер <strong>Т/С</strong> написан на QR-коде в салоне."><span class="dev-reason-ico">2</span><span>Где найти Т/С</span></button>
-        <button class="dev-reason" data-problem="Вопросы по коду" data-answer="Опишите проблему в Telegram."><span class="dev-reason-ico">3</span><span>Вопросы по коду</span></button>
+      <div class="dev-modal-header">
+        <div class="dev-avatar">DV</div>
+        <div>
+          <h3>Написать разработчику</h3>
+          <div class="dev-username">@Demon_of_latvia</div>
+        </div>
       </div>
-      <div id="devAnswer" class="dev-answer"></div><div id="devCopyNote" class="dev-copy-note">Текст скопирован</div>
-      <div class="dev-actions"><button id="devCancelBtn" class="modal-btn cancel">Закрыть</button><button id="devTelegramBtn" class="modal-btn telegram" disabled>В Telegram</button></div>
-    </div>
-  </div>
-
-  <!-- ЭКРАН ВЗЛОМА -->
-  <div id="prankOverlay"></div>
-
-  <!-- ОКНО ПОЛИЦИИ -->
-  <div id="policeModal">
-    <div class="police-card">
-      <div class="police-emoji">👮‍♂️</div>
-      <div class="police-title">Ага!<br>Попался,<br>кладмен</div>
-      <div class="police-sub">Тебя уже ищут...</div>
-      <button class="police-btn" id="closePoliceBtn">Понятно</button>
+      <p class="dev-modal-sub">Выберите тему — появится подсказка, а текст проблемы скопируется.</p>
+      <div id="devReasons" class="dev-reasons">
+        <button class="dev-reason" data-problem="Не работает на iPhone" data-answer="Только разработчик может помочь.">
+          <span class="dev-reason-ico">1</span><span>Не работает на iPhone</span>
+        </button>
+        <button class="dev-reason" data-problem="Где найти Т/С" data-answer="На QR-коде в салоне.">
+          <span class="dev-reason-ico">2</span><span>Где найти Т/С</span>
+        </button>
+        <button class="dev-reason" data-problem="Вопросы по коду" data-answer="Опишите в Telegram.">
+          <span class="dev-reason-ico">3</span><span>Вопросы по коду</span>
+        </button>
+      </div>
+      <div id="devAnswer" class="dev-answer"></div>
+      <div id="devCopyNote" class="dev-copy-note">Текст скопирован</div>
+      <div class="dev-actions">
+        <button id="devCancelBtn" class="modal-btn cancel">Закрыть</button>
+        <button id="devTelegramBtn" class="modal-btn telegram" disabled>В Telegram</button>
+      </div>
     </div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // --- ТЕМЫ ---
-  const themeMenu = document.getElementById('themeMenu');
-  const themeOpts = document.querySelectorAll('.theme-opt');
-  const savedTheme = localStorage.getItem('app-theme');
-  if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
-  window.toggleThemeMenu = function() { themeMenu.classList.toggle('open'); };
-  themeOpts.forEach(opt => {
-    opt.addEventListener('click', () => {
-      document.body.setAttribute('data-theme', opt.getAttribute('data-theme'));
-      localStorage.setItem('app-theme', opt.getAttribute('data-theme'));
-      themeMenu.classList.remove('open');
-    });
-  });
+  const GIST_ID = '2c2eb75c9dd5eb74a0a9af3698ae7b19'; 
+  const CONFIG_URL = `https://api.github.com/gists/${GIST_ID}`;
+  let config = { valid_codes: [], price: "53 ₽" };
+  
+  let isPremium = localStorage.getItem('farepay_premium') === 'true';
+  const COOLDOWN_MS = 5 * 60 * 1000;
 
-  // --- ЛОГИКА ОПЛАТЫ ---
-  const demoScreen = document.getElementById('demoScreen');
-  const resultScreen = document.getElementById('resultScreen');
-  const selectorScreen = document.getElementById('selectorScreen');
-  const mainPage = document.getElementById('mainPage');
-  const payButton = document.getElementById('payButton');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressBar = document.getElementById('progressBar');
-  const progressText = document.getElementById('progressText');
-  const routeButtons = document.getElementById('routeButtons');
-  const routeTitle = document.getElementById('routeTitle');
-  const vehicleNumber = document.getElementById('vehicleNumber');
-  const typeButtons = document.querySelectorAll('.type-btn');
-  const statusBadge = document.getElementById('status');
-  const confirmPayBtn = document.getElementById('confirmPayBtn');
+  // ЗАГРУЗКА КОНФИГА
+  fetch(CONFIG_URL + '?t=' + Date.now()).then(res => res.json()).then(data => {
+    if (data.files && data.files['config.json']) {
+      config = JSON.parse(data.files['config.json'].content);
+      if (config.price) document.getElementById('priceDisplay').textContent = config.price;
+      updateUI();
+    }
+  }).catch(e => console.error("Ошибка Gist:", e));
 
-  payButton.addEventListener('click', () => {
-    payButton.disabled = true; payButton.style.opacity = '.65'; progressWrap.style.display = 'block';
-    const stages = ['Подготовка…', 'Проверка данных…', 'Завершение…']; let progress = 0;
+  // ИНВАЙТЫ И КУЛДАУН
+  function updateUI() {
+    const payBtn = document.getElementById('payButton');
+    const accessText = document.getElementById('accessText');
+    const noCodeBtn = document.getElementById('noCodeBtn');
+    const cooldownMsg = document.getElementById('cooldownMsg');
+
+    if (!isPremium) {
+      payBtn.textContent = '🔒 Введите инвайт-код'; payBtn.classList.add('locked');
+      accessText.textContent = 'Для доступа к оплате требуется инвайт-код.';
+      noCodeBtn.style.display = 'inline-block'; cooldownMsg.style.display = 'none'; return;
+    }
+
+    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
+    const timePassed = Date.now() - lastPay;
+
+    if (timePassed < COOLDOWN_MS) {
+      const remainMs = COOLDOWN_MS - timePassed;
+      payBtn.textContent = `⏳ Ждите ${String(Math.floor(remainMs / 60000)).padStart(2, '0')}:${String(Math.floor((remainMs % 60000) / 1000)).padStart(2, '0')}`;
+      payBtn.classList.add('locked'); accessText.textContent = 'Доступ разрешен, но действует ограничение.';
+      noCodeBtn.style.display = 'none'; cooldownMsg.style.display = 'block';
+    } else {
+      payBtn.textContent = 'Оплатить проезд'; payBtn.classList.remove('locked');
+      accessText.textContent = 'Доступ разрешен. Нажмите кнопку ниже.';
+      noCodeBtn.style.display = 'none'; cooldownMsg.style.display = 'none';
+    }
+  }
+  setInterval(updateUI, 1000);
+
+  window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteInput').value = ''; document.getElementById('inviteError').textContent = ''; };
+  window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
+  window.checkInviteCode = function() {
+    const input = document.getElementById('inviteInput').value.trim().toUpperCase();
+    if (!config.valid_codes || !config.valid_codes.includes(input)) { document.getElementById('inviteError').textContent = 'Неверный код.'; return; }
+    localStorage.setItem('farepay_premium', 'true'); isPremium = true; updateUI(); closeInviteModal();
+  };
+
+  document.getElementById('payButton').addEventListener('click', () => {
+    if (!isPremium) { openInviteModal(); return; }
+    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
+    if (Date.now() - lastPay < COOLDOWN_MS) return;
+    
+    localStorage.setItem('last_payment_time', Date.now());
+    const progressWrap = document.getElementById('progressWrap'); const progressBar = document.getElementById('progressBar');
+    document.getElementById('payButton').disabled = true; progressWrap.style.display = 'block';
+    let progress = 0;
     const interval = setInterval(() => {
-      progress += 2; progressBar.style.width = progress + '%'; progressText.textContent = stages[Math.min(2, Math.floor(progress / 34))];
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          demoScreen.style.display = 'none'; resultScreen.classList.remove('hidden');
-          setTimeout(() => { resultScreen.classList.add('hidden'); selectorScreen.classList.remove('hidden'); }, 1500);
-        }, 400);
-      }
-    }, 35);
+      progress += 4; progressBar.style.width = progress + '%';
+      if (progress >= 100) { clearInterval(interval); setTimeout(() => {
+        document.getElementById('demoScreen').style.display = 'none'; document.getElementById('resultScreen').classList.remove('hidden');
+        setTimeout(() => { document.getElementById('resultScreen').classList.add('hidden'); document.getElementById('selectorScreen').classList.remove('hidden'); }, 1500);
+      }, 300); }
+    }, 30);
   });
 
-  const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
-  const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
-
+  // ЛОГИКА ВЫБОРА
+  const typeButtons = document.querySelectorAll('.type-btn');
   typeButtons.forEach(button => {
     button.addEventListener('click', () => {
       typeButtons.forEach(b => b.classList.remove('active')); button.classList.add('active');
-      const type = button.dataset.type; routeButtons.innerHTML = '';
-      transportRoutes[type].forEach(number => {
-        const routeButton = document.createElement('button');
-        routeButton.className = 'route-btn'; routeButton.textContent = typeLabels[type] + ' ' + number;
-        routeButton.addEventListener('click', () => {
-          routeTitle.textContent = typeLabels[type] + ' №' + number; vehicleNumber.textContent = '—';
-          document.getElementById('openGarageModalBtn').textContent = 'Спросили т/с?';
-          selectorScreen.classList.add('hidden'); mainPage.classList.remove('hidden');
-          statusBadge.style.display = 'none'; confirmPayBtn.style.display = 'block'; confirmPayBtn.disabled = false; confirmPayBtn.style.opacity = '1';
-          startTimer();
+      const type = button.dataset.type; const routes = type === 'bus' ? ['18', '1', '10', '27', '5', '33', '29', '11'] : ['3', '6', '4', '10'];
+      const routeButtons = document.getElementById('routeButtons'); routeButtons.innerHTML = '';
+      routes.forEach(number => {
+        const btn = document.createElement('button'); btn.className = 'route-btn'; btn.textContent = (type === 'bus' ? 'Автобус ' : 'Троллейбус ') + number;
+        btn.addEventListener('click', () => {
+          document.getElementById('routeTitle').textContent = (type === 'bus' ? 'Автобус №' : 'Троллейбус №') + number;
+          document.getElementById('selectorScreen').classList.add('hidden'); document.getElementById('mainPage').classList.remove('hidden');
+          drawQR(); startTimer();
         });
-        routeButtons.appendChild(routeButton);
+        routeButtons.appendChild(btn);
       });
       routeButtons.classList.remove('hidden');
     });
   });
 
-  const garageModal = document.getElementById('garageModal');
-  document.getElementById('openGarageModalBtn').addEventListener('click', () => {
-    garageModal.classList.add('open'); document.getElementById('modalGarageInput').value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
-    document.getElementById('modalGarageInput').focus(); document.getElementById('modalGarageError').textContent = '';
-  });
-  document.getElementById('modalCancelBtn').addEventListener('click', () => garageModal.classList.remove('open'));
-  document.getElementById('modalSaveBtn').addEventListener('click', () => {
-    const val = document.getElementById('modalGarageInput').value.trim();
-    if (!/^\d{3,5}$/.test(val)) { document.getElementById('modalGarageError').textContent = 'От 3 до 5 цифр'; return; }
-    vehicleNumber.textContent = val; document.getElementById('openGarageModalBtn').textContent = 'Изменить т/с (' + val + ')'; garageModal.classList.remove('open');
-  });
-
-  confirmPayBtn.addEventListener('click', () => { confirmPayBtn.style.display = 'none'; statusBadge.style.display = 'inline-block'; });
-
+  // QR, ТАЙМЕР, Т/С
   function drawQR() {
-    const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d');
-    const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
+    const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d'); const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
     function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
-    const grid = [];
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size); const grid = [];
     for (let y = 0; y < modules; y++) { grid[y] = []; for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; } }
     function clearBox(cx, cy, w, h) { for (let y = cy; y < cy + h; y++) { for (let x = cx; x < cx + w; x++) { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0; } } }
     function finder(cx, cy) { clearBox(cx - 1, cy - 1, 9, 9); for (let y = 0; y < 7; y++) { for (let x = 0; x < 7; x++) { const edge = (x === 0 || x === 6 || y === 0 || y === 6); const inner = (x >= 2 && x <= 4 && y >= 2 && y <= 4); if (edge || inner) grid[cy + y][cx + x] = 1; } } }
@@ -282,123 +428,38 @@ document.addEventListener('DOMContentLoaded', () => {
     align(modules - 9, modules - 9); ctx.fillStyle = '#111111';
     for (let y = 0; y < modules; y++) { for (let x = 0; x < modules; x++) { if (grid[y][x]) { ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell)); } } }
   }
-  drawQR();
-
   let timerInterval;
   function startTimer() {
     clearInterval(timerInterval); const timerElement = document.getElementById('timer'); let totalSeconds = 0; timerElement.textContent = '00:00';
     timerInterval = setInterval(() => {
       totalSeconds++; if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
-      const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60;
-      timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      timerElement.textContent = String(Math.floor(totalSeconds / 60)).padStart(2, '0') + ':' + String(totalSeconds % 60).padStart(2, '0');
     }, 1000);
   }
   document.getElementById('payDate').textContent = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }).slice(0, 16);
+  
+  const garageModal = document.getElementById('garageModal');
+  document.getElementById('openGarageModalBtn').addEventListener('click', () => { garageModal.classList.add('open'); document.getElementById('modalGarageInput').focus(); });
+  document.getElementById('modalCancelBtn').addEventListener('click', () => garageModal.classList.remove('open'));
+  document.getElementById('modalSaveBtn').addEventListener('click', () => {
+    const val = document.getElementById('modalGarageInput').value.trim();
+    if (!/^\d{3,5}$/.test(val)) { document.getElementById('modalGarageError').textContent = 'От 3 до 5 цифр'; return; }
+    document.getElementById('vehicleNumber').textContent = val; garageModal.classList.remove('open');
+  });
 
-  // --- МОДАЛКА РАЗРАБОТЧИКА ---
-  const devModal = document.getElementById('devModal'); const devAnswer = document.getElementById('devAnswer'); const devCopyNote = document.getElementById('devCopyNote'); const devTelegramBtn = document.getElementById('devTelegramBtn');
-  document.querySelectorAll('.dev-trigger').forEach(btn => btn.addEventListener('click', () => { devAnswer.classList.remove('show'); devCopyNote.classList.remove('show'); devTelegramBtn.disabled = true; devModal.classList.add('open'); }));
+  // РАЗРАБОТЧИК
+  const devModal = document.getElementById('devModal');
+  document.querySelectorAll('.dev-trigger').forEach(btn => btn.addEventListener('click', () => devModal.classList.add('open')));
   document.getElementById('devCancelBtn').addEventListener('click', () => devModal.classList.remove('open'));
   document.querySelectorAll('.dev-reason').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected')); btn.classList.add('selected');
-      devAnswer.innerHTML = btn.dataset.answer; devAnswer.classList.add('show');
-      navigator.clipboard.writeText(btn.dataset.problem); devCopyNote.classList.add('show'); devTelegramBtn.disabled = false;
+      document.getElementById('devAnswer').innerHTML = btn.dataset.answer; document.getElementById('devAnswer').classList.add('show');
+      navigator.clipboard.writeText(btn.dataset.problem); document.getElementById('devCopyNote').classList.add('show'); document.getElementById('devTelegramBtn').disabled = false;
     });
   });
-  devTelegramBtn.addEventListener('click', () => window.open('https://t.me/Demon_of_latvia', '_blank'));
-
-  // ========================
-  // ПРАНК (ВЗЛОМ И ПОЛИЦИЯ)
-  // ========================
-  const bananaTrigger = document.getElementById('bananaTrigger');
-  const prankOverlay = document.getElementById('prankOverlay');
-  const policeModal = document.getElementById('policeModal');
-
-  function playSiren() {
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext; const ctx = new AudioContext();
-      const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'square';
-      osc.connect(gain); gain.connect(ctx.destination); gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      let time = ctx.currentTime;
-      for (let i = 0; i < 6; i++) { osc.frequency.setValueAtTime(800, time); osc.frequency.setValueAtTime(1200, time + 0.2); time += 0.4; }
-      osc.start(); osc.stop(time);
-    } catch(e) { console.log("Аудио заблокировано"); }
-  }
-
-  const hackLines = [
-    "> INITIALIZING BYPASS PROTOCOL...",
-    "> CONNECTING TO SECURE SERVER...",
-    "> <span class='warning'>WARNING: UNAUTHORIZED ACCESS</span>",
-    "> DOWNLOADING USER DATA... 100%",
-    "> <span class='error'>SYSTEM BREACHED!</span>"
-  ];
-
-  let screenToReturnTo = null; // Запоминаем, куда вернуться
-
-  function startPrank() {
-    // Запоминаем текущий активный экран
-    if (!demoScreen.classList.contains('hidden') && demoScreen.style.display !== 'none') screenToReturnTo = 'demo';
-    else if (!selectorScreen.classList.contains('hidden')) screenToReturnTo = 'selector';
-    else if (!mainPage.classList.contains('hidden')) screenToReturnTo = 'main';
-    else screenToReturnTo = 'demo'; // По умолчанию
-
-    playSiren();
-    prankOverlay.style.display = 'flex';
-    prankOverlay.classList.add('active');
-    prankOverlay.innerHTML = ''; // Чистим старое
-    
-    setTimeout(() => {
-      prankOverlay.classList.add('red');
-      let currentLine = 0;
-      const printInterval = setInterval(() => {
-        if (currentLine < hackLines.length) {
-          const div = document.createElement('div');
-          div.className = 'terminal-line';
-          div.innerHTML = hackLines[currentLine];
-          prankOverlay.appendChild(div);
-          currentLine++;
-        } else {
-          clearInterval(printInterval);
-          setTimeout(() => {
-            prankOverlay.classList.remove('active');
-            prankOverlay.classList.remove('red');
-            prankOverlay.style.display = 'none';
-            
-            // Показываем полицию
-            policeModal.classList.add('active');
-            playSiren(); 
-
-          }, 1200);
-        }
-      }, 400);
-    }, 500);
-  }
-
-  // Кнопка "Понятно" в окне полиции
-  document.getElementById('closePoliceBtn').addEventListener('click', () => {
-    policeModal.classList.remove('active');
-    
-    // Прячем все экраны
-    demoScreen.style.display = 'none';
-    resultScreen.classList.add('hidden');
-    selectorScreen.classList.add('hidden');
-    mainPage.classList.add('hidden');
-
-    // Возвращаем туда, где были
-    if (screenToReturnTo === 'demo') {
-      demoScreen.style.display = 'flex';
-      // Сброс кнопки "Оплатить" на главной, если надо
-      payButton.disabled = false; payButton.style.opacity = '1'; progressWrap.style.display = 'none'; progressBar.style.width = '0%';
-    } else if (screenToReturnTo === 'selector') {
-      selectorScreen.classList.remove('hidden');
-    } else if (screenToReturnTo === 'main') {
-      mainPage.classList.remove('hidden');
-    }
-  });
-
-  bananaTrigger.addEventListener('click', startPrank);
+  document.getElementById('devTelegramBtn').addEventListener('click', () => window.open('https://t.me/Demon_of_latvia', '_blank'));
 });
 </script>
 </body>
-  </html>
+</html>
