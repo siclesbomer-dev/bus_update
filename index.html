@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Оплата проезда</title>
 <style>
-  /* ЕДИНАЯ ТЕМА (Голубая) */
+  /* ЕДИНАЯ ГОЛУБАЯ ТЕМА */
   :root {
     --bg: #f2f4f7; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #667;
     --accent: #0288d1; --btn-gradient: linear-gradient(90deg, #29b6f6, #0288d1);
@@ -68,16 +70,17 @@
   .pay-btn {
     width: 100%; border: 0; border-radius: 16px; padding: 18px 20px;
     font-size: 20px; font-weight: 600; color: #fff; background: var(--btn-gradient);
-    cursor: pointer; box-shadow: 0 6px 20px var(--btn-shadow); margin-bottom: 10px;
+    cursor: pointer; box-shadow: 0 6px 20px var(--btn-shadow); margin-bottom: 20px;
     transition: transform 0.2s, opacity 0.2s;
   }
   .pay-btn:active { transform: scale(0.98); opacity: 0.8; }
   .pay-btn.locked { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
   .pay-btn.locked:active { transform: none; }
 
-  .cooldown-msg {
-    display: none; color: #ff4d4d; font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4;
-  }
+  .progress-wrap { display: none; margin-top: 20px; }
+  .progress-track { height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+  .progress-bar { width: 0%; height: 100%; background: var(--btn-gradient); transition: width .08s linear; }
+  .progress-text { margin-top: 10px; font-size: 15px; color: var(--text-muted); }
 
   .status-badge {
     display: none; background: rgba(46, 125, 50, 0.15); color: #2e7d32;
@@ -138,7 +141,7 @@
   }
   .garage-link:hover { color: var(--accent); }
 
-  /* Разработчик */
+  /* ====== «Написать разработчику» ====== */
   .dev-trigger {
     display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted);
     background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; transition: 0.2s;
@@ -203,11 +206,10 @@
       <p id="accessText">Для доступа к оплате требуется инвайт-код.</p>
       
       <button id="payButton" class="pay-btn locked">🔒 Введите инвайт-код</button>
-      <div id="cooldownMsg" class="cooldown-msg">⛔ Оплата за друга запрещена.<br>Следующая оплата будет доступна позже.</div>
       
       <button id="noCodeBtn" class="garage-link" onclick="window.open('https://t.me/Demon_of_latvia', '_blank')" style="font-size: 16px; color: var(--accent); margin-top: 10px;">🎟️ У меня нету кода (Купить)</button>
       
-      <div id="progressWrap" class="progress-wrap hidden" style="margin-top: 20px;">
+      <div id="progressWrap" class="progress-wrap hidden">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
         <div id="progressText" class="progress-text">Подготовка…</div>
       </div>
@@ -282,7 +284,7 @@
   <div id="inviteModal" class="modal-overlay">
     <div class="modal-card">
       <h3>🎟️ Доступ по инвайту</h3>
-      <p>Введите код <b>FARE-XXXX-XXXX</b>. Доступ сохранится в вашем браузере.</p>
+      <p>Введите код <b>FARE-XXXX-XXXX</b>. Код привязывается к вашему устройству.</p>
       <input id="inviteInput" class="modal-input" type="text" placeholder="FARE-XXXX-XXXX" style="text-transform: uppercase;">
       <div id="inviteError" class="modal-error"></div>
       <div class="modal-actions">
@@ -324,141 +326,303 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const GIST_ID = '2c2eb75c9dd5eb74a0a9af3698ae7b19'; 
-  const CONFIG_URL = `https://api.github.com/gists/${GIST_ID}`;
-  let config = { valid_codes: [], price: "53 ₽" };
   
-  let isPremium = localStorage.getItem('farepay_premium') === 'true';
-  const COOLDOWN_MS = 5 * 60 * 1000;
+  // ==========================================
+  // СИСТЕМА ИНВАЙТОВ (ТВОЯ РАБОЧАЯ СХЕМА)
+  // ==========================================
+  const validCodes = [
+    "FARE-ROAW-WX4G",
+    "FARE-48CW-IXM2",
+    "FARE-UGQX-OZRK",
+    "FARE-BA9Q-3PQT",
+    "FARE-57YP-4NJ2",
+    "FARE-HPOM-RE6V",
+    "FARE-D48Q-IE8S"
+  ];
 
-  // ЗАГРУЗКА КОНФИГА
-  fetch(CONFIG_URL + '?t=' + Date.now()).then(res => res.json()).then(data => {
-    if (data.files && data.files['config.json']) {
-      config = JSON.parse(data.files['config.json'].content);
-      if (config.price) document.getElementById('priceDisplay').textContent = config.price;
-      updateUI();
+  let isPremium = false;
+  
+  // Генерируем или получаем уникальный ID устройства
+  let deviceId = localStorage.getItem('farepay_device_id');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('farepay_device_id', deviceId);
+  }
+
+  // Проверяем доступ при загрузке
+  function checkAccess() {
+    const savedDB = JSON.parse(localStorage.getItem('farepay_db') || '{}');
+    const myInvite = localStorage.getItem('farepay_my_invite');
+    
+    if (myInvite && savedDB[myInvite] === deviceId) {
+      isPremium = true;
+    } else {
+      isPremium = false;
+      localStorage.removeItem('farepay_my_invite');
     }
-  }).catch(e => console.error("Ошибка Gist:", e));
+    
+    updateUI();
+  }
 
-  // ИНВАЙТЫ И КУЛДАУН
   function updateUI() {
     const payBtn = document.getElementById('payButton');
     const accessText = document.getElementById('accessText');
     const noCodeBtn = document.getElementById('noCodeBtn');
-    const cooldownMsg = document.getElementById('cooldownMsg');
 
-    if (!isPremium) {
-      payBtn.textContent = '🔒 Введите инвайт-код'; payBtn.classList.add('locked');
-      accessText.textContent = 'Для доступа к оплате требуется инвайт-код.';
-      noCodeBtn.style.display = 'inline-block'; cooldownMsg.style.display = 'none'; return;
-    }
-
-    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
-    const timePassed = Date.now() - lastPay;
-
-    if (timePassed < COOLDOWN_MS) {
-      const remainMs = COOLDOWN_MS - timePassed;
-      payBtn.textContent = `⏳ Ждите ${String(Math.floor(remainMs / 60000)).padStart(2, '0')}:${String(Math.floor((remainMs % 60000) / 1000)).padStart(2, '0')}`;
-      payBtn.classList.add('locked'); accessText.textContent = 'Доступ разрешен, но действует ограничение.';
-      noCodeBtn.style.display = 'none'; cooldownMsg.style.display = 'block';
-    } else {
-      payBtn.textContent = 'Оплатить проезд'; payBtn.classList.remove('locked');
+    if (isPremium) {
+      payBtn.textContent = 'Оплатить проезд';
+      payBtn.classList.remove('locked');
       accessText.textContent = 'Доступ разрешен. Нажмите кнопку ниже.';
-      noCodeBtn.style.display = 'none'; cooldownMsg.style.display = 'none';
+      noCodeBtn.style.display = 'none';
+    } else {
+      payBtn.textContent = '🔒 Введите инвайт-код';
+      payBtn.classList.add('locked');
+      accessText.textContent = 'Для доступа к оплате требуется инвайт-код.';
+      noCodeBtn.style.display = 'inline-block';
     }
   }
-  setInterval(updateUI, 1000);
 
-  window.openInviteModal = function() { document.getElementById('inviteModal').classList.add('open'); document.getElementById('inviteInput').value = ''; document.getElementById('inviteError').textContent = ''; };
-  window.closeInviteModal = function() { document.getElementById('inviteModal').classList.remove('open'); };
-  window.checkInviteCode = function() {
-    const input = document.getElementById('inviteInput').value.trim().toUpperCase();
-    if (!config.valid_codes || !config.valid_codes.includes(input)) { document.getElementById('inviteError').textContent = 'Неверный код.'; return; }
-    localStorage.setItem('farepay_premium', 'true'); isPremium = true; updateUI(); closeInviteModal();
+  window.openInviteModal = function() {
+    document.getElementById('inviteModal').classList.add('open');
+    document.getElementById('inviteInput').value = '';
+    document.getElementById('inviteError').textContent = '';
+  };
+  window.closeInviteModal = function() {
+    document.getElementById('inviteModal').classList.remove('open');
   };
 
-  document.getElementById('payButton').addEventListener('click', () => {
-    if (!isPremium) { openInviteModal(); return; }
-    const lastPay = parseInt(localStorage.getItem('last_payment_time') || '0', 10);
-    if (Date.now() - lastPay < COOLDOWN_MS) return;
+  window.checkInviteCode = function() {
+    const input = document.getElementById('inviteInput').value.trim().toUpperCase();
+    const errorEl = document.getElementById('inviteError');
+
+    if (!validCodes.includes(input)) {
+      errorEl.textContent = 'Неверный код. Проверьте написание.';
+      return;
+    }
+
+    const savedDB = JSON.parse(localStorage.getItem('farepay_db') || '{}');
     
-    localStorage.setItem('last_payment_time', Date.now());
-    const progressWrap = document.getElementById('progressWrap'); const progressBar = document.getElementById('progressBar');
-    document.getElementById('payButton').disabled = true; progressWrap.style.display = 'block';
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 4; progressBar.style.width = progress + '%';
-      if (progress >= 100) { clearInterval(interval); setTimeout(() => {
-        document.getElementById('demoScreen').style.display = 'none'; document.getElementById('resultScreen').classList.remove('hidden');
-        setTimeout(() => { document.getElementById('resultScreen').classList.add('hidden'); document.getElementById('selectorScreen').classList.remove('hidden'); }, 1500);
-      }, 300); }
-    }, 30);
+    if (savedDB[input] && savedDB[input] !== deviceId) {
+      errorEl.textContent = 'Этот код уже активирован на другом устройстве.';
+      return;
+    }
+
+    savedDB[input] = deviceId;
+    localStorage.setItem('farepay_db', JSON.stringify(savedDB));
+    localStorage.setItem('farepay_my_invite', input);
+    
+    checkAccess();
+    closeInviteModal();
+  };
+
+  checkAccess();
+
+  // Клик по главной кнопке
+  document.getElementById('payButton').addEventListener('click', () => {
+    if (!isPremium) {
+      openInviteModal();
+    } else {
+      const payButton = document.getElementById('payButton');
+      const progressWrap = document.getElementById('progressWrap');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      
+      payButton.disabled = true;
+      progressWrap.classList.remove('hidden');
+      progressWrap.style.display = 'block';
+
+      const stages = ['Подготовка…', 'Проверка данных…', 'Завершение…'];
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 2;
+        progressBar.style.width = progress + '%';
+        progressText.textContent = stages[Math.min(2, Math.floor(progress / 34))];
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            document.getElementById('demoScreen').style.display = 'none';
+            document.getElementById('resultScreen').classList.remove('hidden');
+            setTimeout(() => {
+              document.getElementById('resultScreen').classList.add('hidden');
+              document.getElementById('selectorScreen').classList.remove('hidden');
+            }, 1500);
+          }, 400);
+        }
+      }, 35);
+    }
   });
 
-  // ЛОГИКА ВЫБОРА
-  const typeButtons = document.querySelectorAll('.type-btn');
+  // === ОСНОВНАЯ ЛОГИКА ===
+  const routeButtons  = document.getElementById('routeButtons');
+  const routeTitle    = document.getElementById('routeTitle');
+  const vehicleNumber = document.getElementById('vehicleNumber');
+  const typeButtons   = document.querySelectorAll('.type-btn');
+
+  const openGarageModalBtn = document.getElementById('openGarageModalBtn');
+  const garageModal        = document.getElementById('garageModal');
+  const modalGarageInput   = document.getElementById('modalGarageInput');
+  const modalGarageError   = document.getElementById('modalGarageError');
+  const modalCancelBtn     = document.getElementById('modalCancelBtn');
+  const modalSaveBtn       = document.getElementById('modalSaveBtn');
+
+  const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
+  const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
+
   typeButtons.forEach(button => {
     button.addEventListener('click', () => {
-      typeButtons.forEach(b => b.classList.remove('active')); button.classList.add('active');
-      const type = button.dataset.type; const routes = type === 'bus' ? ['18', '1', '10', '27', '5', '33', '29', '11'] : ['3', '6', '4', '10'];
-      const routeButtons = document.getElementById('routeButtons'); routeButtons.innerHTML = '';
-      routes.forEach(number => {
-        const btn = document.createElement('button'); btn.className = 'route-btn'; btn.textContent = (type === 'bus' ? 'Автобус ' : 'Троллейбус ') + number;
-        btn.addEventListener('click', () => {
-          document.getElementById('routeTitle').textContent = (type === 'bus' ? 'Автобус №' : 'Троллейбус №') + number;
-          document.getElementById('selectorScreen').classList.add('hidden'); document.getElementById('mainPage').classList.remove('hidden');
-          drawQR(); startTimer();
+      typeButtons.forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      const type = button.dataset.type;
+      routeButtons.innerHTML = '';
+      transportRoutes[type].forEach(number => {
+        const routeButton = document.createElement('button');
+        routeButton.className = 'route-btn';
+        routeButton.textContent = typeLabels[type] + ' ' + number;
+        
+        routeButton.addEventListener('click', () => {
+          routeTitle.textContent = typeLabels[type] + ' №' + number;
+          vehicleNumber.textContent = '—';
+          openGarageModalBtn.textContent = 'Спросили т/с?';
+          
+          document.getElementById('selectorScreen').classList.add('hidden');
+          document.getElementById('mainPage').classList.remove('hidden');
+          
+          drawQR(); 
+          startTimer();
         });
-        routeButtons.appendChild(btn);
+        routeButtons.appendChild(routeButton);
       });
       routeButtons.classList.remove('hidden');
     });
   });
 
-  // QR, ТАЙМЕР, Т/С
-  function drawQR() {
-    const canvas = document.getElementById('qrCanvas'); const ctx = canvas.getContext('2d'); const size = canvas.width; const modules = 33; const cell = size / modules; let seed = 20261028;
-    function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size); const grid = [];
-    for (let y = 0; y < modules; y++) { grid[y] = []; for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; } }
-    function clearBox(cx, cy, w, h) { for (let y = cy; y < cy + h; y++) { for (let x = cx; x < cx + w; x++) { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0; } } }
-    function finder(cx, cy) { clearBox(cx - 1, cy - 1, 9, 9); for (let y = 0; y < 7; y++) { for (let x = 0; x < 7; x++) { const edge = (x === 0 || x === 6 || y === 0 || y === 6); const inner = (x >= 2 && x <= 4 && y >= 2 && y <= 4); if (edge || inner) grid[cy + y][cx + x] = 1; } } }
-    finder(0, 0); finder(modules - 7, 0); finder(0, modules - 7);
-    function align(cx, cy) { clearBox(cx - 1, cy - 1, 7, 7); for (let y = 0; y < 5; y++) { for (let x = 0; x < 5; x++) { const edge = (x === 0 || x === 4 || y === 0 || y === 4); const center = (x === 2 && y === 2); if (edge || center) grid[cy + y][cx + x] = 1; } } }
-    align(modules - 9, modules - 9); ctx.fillStyle = '#111111';
-    for (let y = 0; y < modules; y++) { for (let x = 0; x < modules; x++) { if (grid[y][x]) { ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell)); } } }
-  }
-  let timerInterval;
-  function startTimer() {
-    clearInterval(timerInterval); const timerElement = document.getElementById('timer'); let totalSeconds = 0; timerElement.textContent = '00:00';
-    timerInterval = setInterval(() => {
-      totalSeconds++; if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
-      timerElement.textContent = String(Math.floor(totalSeconds / 60)).padStart(2, '0') + ':' + String(totalSeconds % 60).padStart(2, '0');
-    }, 1000);
-  }
-  document.getElementById('payDate').textContent = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }).slice(0, 16);
-  
-  const garageModal = document.getElementById('garageModal');
-  document.getElementById('openGarageModalBtn').addEventListener('click', () => { garageModal.classList.add('open'); document.getElementById('modalGarageInput').focus(); });
-  document.getElementById('modalCancelBtn').addEventListener('click', () => garageModal.classList.remove('open'));
-  document.getElementById('modalSaveBtn').addEventListener('click', () => {
-    const val = document.getElementById('modalGarageInput').value.trim();
-    if (!/^\d{3,5}$/.test(val)) { document.getElementById('modalGarageError').textContent = 'От 3 до 5 цифр'; return; }
-    document.getElementById('vehicleNumber').textContent = val; garageModal.classList.remove('open');
+  openGarageModalBtn.addEventListener('click', () => {
+    garageModal.classList.add('open');
+    modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
+    modalGarageInput.focus();
+    modalGarageError.textContent = '';
   });
 
-  // РАЗРАБОТЧИК
-  const devModal = document.getElementById('devModal');
-  document.querySelectorAll('.dev-trigger').forEach(btn => btn.addEventListener('click', () => devModal.classList.add('open')));
-  document.getElementById('devCancelBtn').addEventListener('click', () => devModal.classList.remove('open'));
-  document.querySelectorAll('.dev-reason').forEach(btn => {
+  function closeModal() { garageModal.classList.remove('open'); modalGarageError.textContent = ''; }
+  modalCancelBtn.addEventListener('click', closeModal);
+  garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
+
+  modalGarageInput.addEventListener('input', () => {
+    modalGarageInput.value = modalGarageInput.value.replace(/\D/g, '');
+    modalGarageError.textContent = '';
+  });
+
+  modalSaveBtn.addEventListener('click', () => {
+    const val = modalGarageInput.value.trim();
+    if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
+    vehicleNumber.textContent = val;
+    openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')';
+    closeModal();
+  });
+
+  // --- QR-КОД ---
+  function drawQR() {
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width; const modules = 33; const cell = size / modules;
+    let seed = 20261028;
+    function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+    const grid = [];
+    for (let y = 0; y < modules; y++) { grid[y] = []; for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; } }
+    function clearBox(cx, cy, w, h) { for (let y = cy; y < cy + h; y++) { for (let x = cx; x < cx + w; x++) { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0; } } }
+    function finder(cx, cy) {
+      clearBox(cx - 1, cy - 1, 9, 9);
+      for (let y = 0; y < 7; y++) { for (let x = 0; x < 7; x++) { const edge = (x === 0 || x === 6 || y === 0 || y === 6); const inner = (x >= 2 && x <= 4 && y >= 2 && y <= 4); if (edge || inner) grid[cy + y][cx + x] = 1; } }
+    }
+    finder(0, 0); finder(modules - 7, 0); finder(0, modules - 7);
+    function align(cx, cy) {
+      clearBox(cx - 1, cy - 1, 7, 7);
+      for (let y = 0; y < 5; y++) { for (let x = 0; x < 5; x++) { const edge = (x === 0 || x === 4 || y === 0 || y === 4); const center = (x === 2 && y === 2); if (edge || center) grid[cy + y][cx + x] = 1; } }
+    }
+    align(modules - 9, modules - 9);
+    ctx.fillStyle = '#111111';
+    for (let y = 0; y < modules; y++) { for (let x = 0; x < modules; x++) { if (grid[y][x]) { ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell)); } } }
+  }
+
+  // --- ТАЙМЕР ---
+  let timerInterval;
+  function startTimer() {
+    clearInterval(timerInterval);
+    const timerElement = document.getElementById('timer');
+    let totalSeconds = 0;
+    timerElement.textContent = '00:00';
+    timerInterval = setInterval(() => {
+      totalSeconds++;
+      if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }, 1000);
+  }
+
+  // --- ДАТА ---
+  function nowMoscow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })); }
+  function formatMoscowDate(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  document.getElementById('payDate').textContent = formatMoscowDate(nowMoscow());
+
+  // ========================
+  // БЛОК «НАПИСАТЬ РАЗРАБОТЧИКУ»
+  // ========================
+  const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
+  const devModal        = document.getElementById('devModal');
+  const devReasons      = document.getElementById('devReasons');
+  const devAnswer       = document.getElementById('devAnswer');
+  const devCopyNote     = document.getElementById('devCopyNote');
+  const devCancelBtn    = document.getElementById('devCancelBtn');
+  const devTelegramBtn  = document.getElementById('devTelegramBtn');
+
+  const devTriggers = [document.getElementById('devTriggerDemo'), document.getElementById('devTriggerSelector'), document.getElementById('devTriggerMain')].filter(Boolean);
+
+  function resetDevModal() {
+    devAnswer.classList.remove('show');
+    devAnswer.innerHTML = '';
+    devCopyNote.classList.remove('show');
+    devTelegramBtn.disabled = true;
+    devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+  }
+  function openDevModal() { resetDevModal(); devModal.classList.add('open'); }
+  function closeDevModal() { devModal.classList.remove('open'); }
+
+  devTriggers.forEach(btn => btn.addEventListener('click', openDevModal));
+  devCancelBtn.addEventListener('click', closeDevModal);
+  devModal.addEventListener('click', (e) => { if (e.target === devModal) closeDevModal(); });
+
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select(); const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch (e) { return false; }
+  }
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(() => fallbackCopy(text)); }
+    else { fallbackCopy(text); }
+  }
+
+  devReasons.querySelectorAll('.dev-reason').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected')); btn.classList.add('selected');
-      document.getElementById('devAnswer').innerHTML = btn.dataset.answer; document.getElementById('devAnswer').classList.add('show');
-      navigator.clipboard.writeText(btn.dataset.problem); document.getElementById('devCopyNote').classList.add('show'); document.getElementById('devTelegramBtn').disabled = false;
+      devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+      btn.classList.add('selected');
+      const problem = btn.dataset.problem || btn.textContent.trim();
+      const answer  = btn.dataset.answer || '';
+      devAnswer.innerHTML = answer;
+      devAnswer.classList.add('show');
+      const fullText = problem + '\n\n(Из приложения «Оплата проезда»)';
+      copyToClipboard(fullText);
+      devCopyNote.classList.add('show');
+      devTelegramBtn.disabled = false;
     });
   });
-  document.getElementById('devTelegramBtn').addEventListener('click', () => window.open('https://t.me/Demon_of_latvia', '_blank'));
+  devTelegramBtn.addEventListener('click', () => { window.open(TELEGRAM_URL, '_blank', 'noopener'); });
+
 });
 </script>
 </body>
