@@ -9,29 +9,24 @@
 <style>
   /* БАЗА */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-  body { margin: 0; background: #f0f0f0; color: #333; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body { margin: 0; background: #f4f5f7; color: #333; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   .hidden { display: none !important; }
 
-  /* --- 1. ГЛАВНАЯ СТРАНИЦА (ТОЛЬКО ИНТЕРЬЕР) --- */
-  .payment-header { position: relative; height: 160px; background: #0e8cf0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .payment-header::before { content: ""; position: absolute; top: -20px; left: -10%; width: 120%; height: 90px; background: #0972c4; border-radius: 0 0 50% 50% / 0 0 100% 100%; }
-  .payment-header::after { content: ""; position: absolute; bottom: -1px; left: -10%; width: 120%; height: 80px; background: #f0f0f0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1; }
-  .payment-header-text { position: relative; z-index: 2; color: #fff; font-size: 20px; font-weight: 500; letter-spacing: 1px; margin-top: 20px; }
+  /* --- 1. ГЛАВНАЯ СТРАНИЦА (ИНТЕРЬЕР) --- */
+  .wave-container { position: relative; width: 100%; height: 190px; background: #0d8bf0; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+  .wave-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .wave-text { position: relative; z-index: 10; color: #fff; font-size: 20px; font-weight: 400; margin-bottom: 45px; letter-spacing: 0.5px; }
 
-  .check-content { background: #f0f0f0; min-height: calc(100vh - 160px); padding: 0 20px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .check-qr-logo { width: 70px; height: 70px; background: #fff; border-radius: 16px; margin-top: -35px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; z-index: 10; }
-  .check-qr-inner { width: 60px; height: 60px; background: #0e8cf0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -1px; }
-  
-  .check-route { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 8px; }
-  .check-price { font-size: 44px; font-weight: 700; color: #333; margin: 0 0 15px; letter-spacing: -1px; }
-  .check-date { font-size: 15px; color: #666; margin-bottom: 5px; line-height: 1.4; }
-  .check-vehicle { font-size: 15px; color: #666; margin-bottom: 30px; }
-  
-  .btn-pay-main { width: 100%; max-width: 340px; background: linear-gradient(90deg, #00b4db, #0083b0); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 131, 176, 0.3); transition: transform 0.1s; }
+  .main-body { background: #f4f5f7; min-height: calc(100vh - 190px); padding: 0 20px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  .logo-box { width: 76px; height: 76px; background: #fff; border-radius: 18px; margin-top: -38px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: relative; z-index: 10; }
+  .logo-inner { width: 64px; height: 64px; background: #0084ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+
+  .btn-pay-main { width: 100%; max-width: 340px; background: linear-gradient(90deg, #0ea5e9, #0284c7); color: white; border: none; border-radius: 14px; padding: 18px; font-size: 20px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); transition: transform 0.1s; margin-top: 10px; }
   .btn-pay-main:active { transform: scale(0.98); }
 
   /* --- 2. ВЫБОР ТРАНСПОРТА --- */
-  .selector-screen { min-height: 100vh; background: #f0f0f0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .selector-screen { min-height: 100vh; background: #f4f5f7; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .selector-card { width: 100%; max-width: 440px; background: #fff; border-radius: 24px; padding: 40px 28px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e0e0e0; }
   .selector-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: #333; }
   .selector-card p { margin: 0 0 20px; color: #667; font-size: 16px; }
@@ -42,41 +37,57 @@
   .route-btn { border: 1px solid #e0e0e0; border-radius: 12px; padding: 14px 8px; font-size: 16px; cursor: pointer; background: #f8f9fb; color: #333; font-weight: 600; transition: all 0.2s; }
   .route-btn:hover { background: #e0e0e0; }
 
-  /* --- 3. ЧЕК (ФОТО РУКИ) --- */
-  .ticket-screen { min-height: 100vh; background: #f0f0f0; padding: 24px; display: flex; flex-direction: column; align-items: center; }
+  /* --- 3. ЧЕК --- */
+  .ticket-screen { min-height: 100vh; background: #f4f5f7; padding: 24px; display: flex; flex-direction: column; align-items: center; }
   .ticket-card { width: 100%; max-width: 400px; background: #fff; border-radius: 24px; padding: 30px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e0e0e0; }
   .ticket-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px; }
-  .ticket-price { font-size: 48px; font-weight: 700; color: #333; margin: 0 0 20px; }
-  .ticket-info { font-size: 15px; color: #666; margin-bottom: 10px; }
-  .ticket-timer { font-size: 14px; color: #666; margin-bottom: 30px; }
-  .ticket-timer span { display: block; font-size: 22px; font-weight: 700; color: #0288d1; margin-top: 5px; }
+  .ticket-price { font-size: 44px; font-weight: 700; color: #333; margin: 0 0 15px; }
+  .ticket-info { font-size: 15px; color: #666; margin-bottom: 8px; }
+  .ticket-timer { font-size: 14px; color: #666; margin-bottom: 25px; margin-top: 15px; }
+  .ticket-timer span { display: block; font-size: 22px; font-weight: 700; color: #0288d1; margin-top: 5px; font-variant-numeric: tabular-nums; }
   
-  .qr-box { width: 180px; height: 180px; background: #000; margin: 0 auto; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: bold; }
+  .qr-container { width: 240px; height: 240px; background: #fff; margin: 0 auto; border-radius: 16px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
+  .qr-container canvas { width: 100%; height: 100%; display: block; }
+
+  /* --- КНОПКА ВНИЗУ --- */
+  .bottom-action { margin-top: 25px; text-align: center; width: 100%; }
+  .btn-ask-vehicle { background: none; border: 2px dashed #0288d1; color: #0288d1; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; margin: 0 auto; display: block; transition: background 0.2s; }
+  .btn-ask-vehicle:active { background: #e0f2fe; }
+
+  /* --- МОДАЛКА --- */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+  .modal-overlay.open { display: flex; }
+  .modal-content { background: #fff; border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; }
+  .modal-content h3 { margin: 0 0 12px; font-size: 22px; color: #333; }
+  .modal-content p { margin: 0 0 20px; font-size: 15px; color: #667; }
+  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid #e0e0e0; border-radius: 14px; outline: none; margin-bottom: 16px; text-align: center; background: #f8f9fb; }
+  .modal-actions { display: flex; gap: 12px; }
+  .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
+  .modal-btn.cancel { background: #f8f9fb; color: #667; border: 1px solid #e0e0e0; }
+  .modal-btn.save { background: #0288d1; color: #fff; }
 </style>
 </head>
 <body>
 
-  <!-- ГЛАВНАЯ СТРАНИЦА (ЧИСТЫЙ ИНТЕРЬЕР) -->
+  <!-- ГЛАВНАЯ -->
   <div id="mainHomePage">
-    <header class="payment-header">
-      <div class="payment-header-text">— Оплата проезда —</div>
-    </header>
+    <div class="wave-container">
+      <svg class="wave-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+        <path d="M0,0 L1000,0 L1000,120 C750,180 250,180 0,120 Z" fill="#0084ff" />
+        <path d="M0,0 L1000,0 L1000,40 C750,100 250,100 0,40 Z" fill="#0d8bf0" />
+      </svg>
+      <div class="wave-text">— Оплата проезда —</div>
+    </div>
 
-    <main class="check-content">
-      <div class="check-qr-logo">
-        <div class="check-qr-inner">QR</div>
+    <main class="main-body">
+      <div class="logo-box">
+        <div class="logo-inner">QR</div>
       </div>
-
-      <div class="check-route">Автобус №18</div>
-      <div class="check-price">53 ₽</div>
-      <div class="check-date" id="homeDate">08.11.2026 11:56</div>
-      <div class="check-vehicle">Т/С: <span id="homeVehicle">3506</span></div>
-      
       <button class="btn-pay-main" id="startPayBtn">Оплатить</button>
     </main>
   </div>
 
-  <!-- ЭКРАН ВЫБОРА ТРАНСПОРТА -->
+  <!-- ВЫБОР -->
   <section id="selectorScreen" class="selector-screen hidden">
     <div class="selector-card">
       <h2>Выберите транспорт</h2>
@@ -89,7 +100,7 @@
     </div>
   </section>
 
-  <!-- ЧЕК (БЕЗ ЛИШНИХ КНОПОК) -->
+  <!-- БИЛЕТ -->
   <div id="ticketScreen" class="ticket-screen hidden">
     <div class="ticket-card">
       <div class="ticket-title" id="ticketRouteTitle">Автобус №18</div>
@@ -102,28 +113,42 @@
         <span id="timer">00:00</span>
       </div>
 
-      <!-- Заглушка под QR-код -->
-      <div class="qr-box">QR-КОД</div>
+      <div class="qr-container">
+        <canvas id="realQrCanvas"></canvas>
+      </div>
+
+      <div class="bottom-action">
+        <button class="btn-ask-vehicle" id="btnAskVehicle">Спросили т/с?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА -->
+  <div id="vehicleModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Введите Т/С</h3>
+      <p>Введите номер транспортного средства</p>
+      <input id="modalVehicleInput" type="tel" placeholder="Например: 3506" maxlength="5" class="modal-input">
+      <div class="modal-actions">
+        <button id="modalCancel" class="modal-btn cancel">Отмена</button>
+        <button id="modalSave" class="modal-btn save">Сохранить</button>
+      </div>
     </div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   
-  // --- 1. СТАРТОВЫЕ ДАННЫЕ ГЛАВНОЙ ---
-  document.getElementById('homeDate').textContent = "08.11.2026 11:56";
-  document.getElementById('homeVehicle').textContent = "3506";
-
   document.getElementById('startPayBtn').addEventListener('click', () => {
     document.getElementById('mainHomePage').classList.add('hidden');
     document.getElementById('selectorScreen').classList.remove('hidden');
   });
 
-  // --- 2. ВЫБОР ТРАНСПОРТА ---
   const routeButtons  = document.getElementById('routeButtons');
   const typeButtons   = document.querySelectorAll('.type-btn');
   const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
   const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
+  const ticketVehicle = document.getElementById('ticketVehicle');
 
   typeButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -138,15 +163,15 @@ document.addEventListener('DOMContentLoaded', () => {
         routeButton.textContent = typeLabels[type] + ' ' + number;
         
         routeButton.addEventListener('click', () => {
-          // Переход на ЧЕК
           document.getElementById('selectorScreen').classList.add('hidden');
           document.getElementById('ticketScreen').classList.remove('hidden');
           
-          // Данные для чека (Т/С пустое)
           document.getElementById('ticketRouteTitle').textContent = typeLabels[type] + ' №' + number;
           document.getElementById('ticketDate').textContent = new Date().toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}).replace(',', '');
-          document.getElementById('ticketVehicle').textContent = '—';
           
+          ticketVehicle.textContent = '—';
+          
+          drawRealQR();
           startTimer();
         });
         routeButtons.appendChild(routeButton);
@@ -155,7 +180,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- 3. ТАЙМЕР ---
+  // Модалка
+  const vehicleModal = document.getElementById('vehicleModal');
+  const modalVehicleInput = document.getElementById('modalVehicleInput');
+  const btnAskVehicle = document.getElementById('btnAskVehicle');
+
+  btnAskVehicle.addEventListener('click', () => {
+    vehicleModal.classList.add('open');
+    modalVehicleInput.value = ticketVehicle.textContent !== '—' ? ticketVehicle.textContent : '';
+    modalVehicleInput.focus();
+  });
+
+  document.getElementById('modalCancel').addEventListener('click', () => {
+    vehicleModal.classList.remove('open');
+  });
+
+  document.getElementById('modalSave').addEventListener('click', () => {
+    let val = modalVehicleInput.value.trim();
+    if (val === '') {
+      ticketVehicle.textContent = '—';
+    } else {
+      ticketVehicle.textContent = val;
+    }
+    vehicleModal.classList.remove('open');
+  });
+
+  // Только цифры в инпуте
+  modalVehicleInput.addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '');
+  });
+
+  // Таймер
   let timerInterval;
   function startTimer() {
     clearInterval(timerInterval);
@@ -169,6 +224,44 @@ document.addEventListener('DOMContentLoaded', () => {
       const s = totalSeconds % 60;
       timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }, 1000);
+  }
+
+  // Отрисовка QR
+  function drawRealQR() {
+    const canvas = document.getElementById('realQrCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = 400; 
+    canvas.width = size;
+    canvas.height = size;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    
+    ctx.fillStyle = '#111111';
+    const cellSize = size / 33; 
+    
+    function drawEye(x, y) {
+      ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect((x + 1) * cellSize, (y + 1) * cellSize, 5 * cellSize, 5 * cellSize);
+      ctx.fillStyle = '#111111';
+      ctx.fillRect((x + 2) * cellSize, (y + 2) * cellSize, 3 * cellSize, 3 * cellSize);
+    }
+    
+    for (let i = 0; i < 33; i++) {
+      for (let j = 0; j < 33; j++) {
+        if (i < 8 && j < 8) continue;
+        if (i > 24 && j < 8) continue;
+        if (i < 8 && j > 24) continue;
+        if (Math.random() > 0.5) {
+          ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+    
+    drawEye(1, 1);
+    drawEye(25, 1);
+    drawEye(1, 25);
   }
 
 });
