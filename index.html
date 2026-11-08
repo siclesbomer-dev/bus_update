@@ -7,87 +7,267 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Оплата проезда</title>
 <style>
-  /* БАЗА */
+  /* =========================================
+     БАЗОВЫЕ СТИЛИ (ТОЛЬКО ОДНА ТЕМА)
+     ========================================= */
+  :root {
+    --bg: #f2f4f7;
+    --card-bg: #ffffff;
+    --text-main: #2c3e50;
+    --text-muted: #667;
+    --accent: #0288d1;
+    --btn-gradient: linear-gradient(90deg, #29b6f6, #0288d1);
+    --btn-shadow: rgba(41, 182, 246, 0.3);
+    --header-bg: #1a9be8;
+    --wave-top: #0c75b8;
+    --border-color: #e0e0e0;
+    --input-bg: #f8f9fb;
+    --modal-bg: #ffffff;
+    --shadow: 0 10px 40px rgba(0,0,0,0.06);
+    --qr-bg: #ffffff;
+  }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-  body { margin: 0; background: #f4f5f7; color: #333; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Шапка (Волна) */
+  .header-wave {
+    position: relative; height: 190px; background: var(--header-bg); overflow: hidden;
+  }
+  .header-wave::before {
+    content: ""; position: absolute; top: -50px; left: -10%; width: 120%; height: 150px;
+    background: var(--wave-top); border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  }
+  .header-wave::after {
+    content: ""; position: absolute; bottom: -10px; left: -10%; width: 120%; height: 120px;
+    background: var(--bg); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1;
+  }
+  .header-content {
+    position: relative; z-index: 2; text-align: center; color: #fff;
+    font-size: 24px; font-weight: 500; padding-top: 85px; letter-spacing: 0.5px;
+  }
+
+  /* Основной контент */
+  .main-container {
+    padding: 0 20px 40px; max-width: 440px; margin: -30px auto 0;
+    position: relative; z-index: 10; text-align: center;
+  }
+  
+  .qr-logo {
+    width: 90px; height: 90px; background: var(--card-bg); border-radius: 20px;
+    margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .qr-logo-inner {
+    width: 80px; height: 80px; background: var(--btn-gradient);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -2px;
+  }
+
+  .route-title { font-size: 26px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
+  .price { font-size: 58px; font-weight: 800; margin: 0 0 20px; letter-spacing: -1px; color: var(--text-main); }
+
+  .info-block { font-size: 18px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
+  .info-block span { color: var(--text-main); font-weight: 600; }
+
+  .qr-container {
+    margin: 0 auto 24px; width: 220px; height: 220px; background: var(--qr-bg);
+    border-radius: 20px; padding: 12px; box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .qr-container canvas { display: block; width: 100%; height: 100%; border-radius: 12px; }
+
+  .timer-container {
+    display: inline-block; background: var(--input-bg); border-radius: 12px;
+    padding: 8px 24px; margin-bottom: 24px; color: var(--text-muted); font-size: 16px; font-weight: 500;
+    border: 1px solid var(--border-color);
+  }
+  .timer-value {
+    font-size: 22px; font-weight: 700; color: var(--accent);
+    letter-spacing: 1px; font-variant-numeric: tabular-nums;
+  }
+
+  .pay-btn {
+    width: 100%; border: 0; border-radius: 16px; padding: 18px 20px;
+    font-size: 20px; font-weight: 600; color: #fff;
+    background: var(--btn-gradient); cursor: pointer;
+    box-shadow: 0 6px 20px var(--btn-shadow);
+    margin-bottom: 20px; transition: transform 0.2s, opacity 0.2s;
+  }
+  .pay-btn:active { transform: scale(0.98); opacity: 0.8; }
+
+  .status-badge {
+    display: none; background: rgba(46, 125, 50, 0.15); color: #2e7d32;
+    padding: 10px 16px; border-radius: 10px; font-weight: 600;
+    font-size: 16px; margin-bottom: 20px; border: 1px solid #2e7d3233;
+  }
+
+  .progress-wrap { display: none; margin-top: 20px; }
+  .progress-track { height: 8px; background: var(--input-bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+  .progress-bar { width: 0%; height: 100%; background: var(--btn-gradient); transition: width .08s linear; }
+  .progress-text { margin-top: 10px; font-size: 15px; color: var(--text-muted); }
+
+  /* Экраны */
+  .selector-screen, .demo-screen {
+    min-height: 100vh; background: var(--bg); display: flex;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .selector-card, .demo-card {
+    width: 100%; max-width: 440px; background: var(--card-bg); border-radius: 24px;
+    padding: 40px 28px; box-shadow: var(--shadow); text-align: center;
+    border: 1px solid var(--border-color);
+  }
+  .selector-card h2, .demo-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: var(--text-main); }
+  .selector-card p, .demo-card p { margin: 0 0 20px; color: var(--text-muted); font-size: 16px; }
+
+  .type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .type-btn, .route-btn {
+    border: 1px solid var(--border-color); border-radius: 12px; padding: 15px 12px; font-size: 17px;
+    cursor: pointer; background: var(--input-bg); color: var(--text-main); font-weight: 600;
+    transition: all 0.2s;
+  }
+  .type-btn:active, .route-btn:active { opacity: 0.7; transform: scale(0.97); }
+  .type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px var(--btn-shadow); }
+  .route-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .route-btn { font-size: 16px; padding: 14px 8px; }
   .hidden { display: none !important; }
 
-  /* --- 1. ГЛАВНАЯ СТРАНИЦА (ИНТЕРЬЕР) --- */
-  .wave-container { position: relative; width: 100%; height: 190px; background: #0d8bf0; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
-  .wave-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  .wave-text { position: relative; z-index: 10; color: #fff; font-size: 20px; font-weight: 400; margin-bottom: 45px; letter-spacing: 0.5px; }
+  .result-title { font-size: 32px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; color: var(--text-main); }
+  .result-subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 17px; }
 
-  .main-body { background: #f4f5f7; min-height: calc(100vh - 190px); padding: 0 20px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-
-  .logo-box { width: 76px; height: 76px; background: #fff; border-radius: 18px; margin-top: -38px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: relative; z-index: 10; }
-  .logo-inner { width: 64px; height: 64px; background: #0084ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; }
-
-  .btn-pay-main { width: 100%; max-width: 340px; background: linear-gradient(90deg, #0ea5e9, #0284c7); color: white; border: none; border-radius: 14px; padding: 18px; font-size: 20px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); transition: transform 0.1s; margin-top: 10px; }
-  .btn-pay-main:active { transform: scale(0.98); }
-
-  /* --- 2. ВЫБОР ТРАНСПОРТА --- */
-  .selector-screen { min-height: 100vh; background: #f4f5f7; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .selector-card { width: 100%; max-width: 440px; background: #fff; border-radius: 24px; padding: 40px 28px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e0e0e0; }
-  .selector-card h2 { margin: 0 0 24px; font-size: 26px; font-weight: 700; color: #333; }
-  .selector-card p { margin: 0 0 20px; color: #667; font-size: 16px; }
-  .type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .type-btn { border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px 12px; font-size: 17px; cursor: pointer; background: #f8f9fb; color: #333; font-weight: 600; transition: all 0.2s; }
-  .type-btn.active { background: #0288d1; color: #fff; border-color: #0288d1; }
-  .route-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .route-btn { border: 1px solid #e0e0e0; border-radius: 12px; padding: 14px 8px; font-size: 16px; cursor: pointer; background: #f8f9fb; color: #333; font-weight: 600; transition: all 0.2s; }
-  .route-btn:hover { background: #e0e0e0; }
-
-  /* --- 3. ЧЕК --- */
-  .ticket-screen { min-height: 100vh; background: #f4f5f7; padding: 24px; display: flex; flex-direction: column; align-items: center; }
-  .ticket-card { width: 100%; max-width: 400px; background: #fff; border-radius: 24px; padding: 30px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e0e0e0; }
-  .ticket-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px; }
-  .ticket-price { font-size: 44px; font-weight: 700; color: #333; margin: 0 0 15px; }
-  .ticket-info { font-size: 15px; color: #666; margin-bottom: 8px; }
-  .ticket-timer { font-size: 14px; color: #666; margin-bottom: 25px; margin-top: 15px; }
-  .ticket-timer span { display: block; font-size: 22px; font-weight: 700; color: #0288d1; margin-top: 5px; font-variant-numeric: tabular-nums; }
-  
-  .qr-container { width: 240px; height: 240px; background: #fff; margin: 0 auto; border-radius: 16px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
-  .qr-container canvas { width: 100%; height: 100%; display: block; }
-
-  /* --- КНОПКА ВНИЗУ --- */
-  .bottom-action { margin-top: 25px; text-align: center; width: 100%; }
-  .btn-ask-vehicle { background: none; border: 2px dashed #0288d1; color: #0288d1; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; margin: 0 auto; display: block; transition: background 0.2s; }
-  .btn-ask-vehicle:active { background: #e0f2fe; }
-
-  /* --- МОДАЛКА --- */
-  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+  /* Модальные окна */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
   .modal-overlay.open { display: flex; }
-  .modal-content { background: #fff; border-radius: 20px; padding: 26px; width: 90%; max-width: 340px; text-align: center; }
-  .modal-content h3 { margin: 0 0 12px; font-size: 22px; color: #333; }
-  .modal-content p { margin: 0 0 20px; font-size: 15px; color: #667; }
-  .modal-input { width: 100%; padding: 16px; font-size: 18px; border: 2px solid #e0e0e0; border-radius: 14px; outline: none; margin-bottom: 16px; text-align: center; background: #f8f9fb; }
+  .modal-card {
+    background: var(--modal-bg); border: 1px solid var(--border-color);
+    border-radius: 20px; padding: 26px; width: 90%; max-width: 340px;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .modal-card h3 { margin: 0 0 12px; font-size: 22px; color: var(--text-main); }
+  .modal-card p { margin: 0 0 20px; font-size: 15px; color: var(--text-muted); }
+  .modal-input {
+    width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border-color); border-radius: 14px;
+    outline: none; margin-bottom: 16px; letter-spacing: 1px; text-align: center; background: var(--input-bg);
+    color: var(--text-main); transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: var(--accent); }
   .modal-actions { display: flex; gap: 12px; }
-  .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
-  .modal-btn.cancel { background: #f8f9fb; color: #667; border: 1px solid #e0e0e0; }
-  .modal-btn.save { background: #0288d1; color: #fff; }
+  .modal-btn { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .modal-btn:active { opacity: 0.7; transform: scale(0.97); }
+  .modal-btn.cancel { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
+  .modal-btn.save { background: var(--btn-gradient); color: #fff; }
+  .modal-error { color: #ff4d4d; font-size: 14px; margin-bottom: 12px; min-height: 18px; font-weight: 600; }
+
+  .garage-link {
+    display: inline-block; margin-top: 24px; font-size: 14px; color: var(--text-muted);
+    background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px;
+    transition: 0.2s;
+  }
+  .garage-link:hover { color: var(--accent); }
+
+  /* Блок «Написать разработчику» */
+  .dev-trigger {
+    display: inline-block; margin-top: 16px; font-size: 14px; color: var(--text-muted);
+    background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px;
+    transition: 0.2s;
+  }
+  .dev-trigger:hover { color: var(--accent); }
+
+  .dev-modal-card {
+    background: var(--modal-bg); border: 1px solid var(--border-color);
+    border-radius: 22px; padding: 26px 22px 22px; width: 92%; max-width: 400px;
+    text-align: left; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto;
+  }
+  .dev-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dev-avatar {
+    width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+    background: var(--btn-gradient);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 20px; letter-spacing: -1px;
+    box-shadow: 0 4px 10px var(--btn-shadow);
+  }
+  .dev-modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+  .dev-modal-header .dev-username { font-size: 13px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+  .dev-modal-sub { margin: 0 0 16px; font-size: 14px; color: var(--text-muted); line-height: 1.45; }
+
+  .dev-reasons { display: grid; gap: 10px; margin-bottom: 16px; }
+  .dev-reason {
+    display: flex; align-items: flex-start; gap: 10px; text-align: left;
+    background: var(--input-bg); border: 2px solid transparent; border-radius: 14px;
+    padding: 12px 14px; cursor: pointer; transition: all 0.2s;
+    font-size: 15px; color: var(--text-main); font-weight: 600; line-height: 1.3;
+  }
+  .dev-reason:hover { border-color: var(--border-color); }
+  .dev-reason.selected { border-color: var(--accent); background: var(--card-bg); box-shadow: 0 4px 15px var(--btn-shadow); }
+  .dev-reason .dev-reason-ico {
+    width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px;
+    background: var(--card-bg); color: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 14px; font-weight: 800;
+    border: 1px solid var(--border-color);
+  }
+  .dev-reason.selected .dev-reason-ico { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .dev-reason small { display: block; font-weight: 500; color: var(--text-muted); font-size: 12.5px; margin-top: 2px; }
+
+  .dev-answer {
+    display: none; margin-bottom: 14px; padding: 14px 16px;
+    background: var(--input-bg); border-left: 4px solid var(--accent);
+    border-radius: 12px; font-size: 14px; color: var(--text-main); line-height: 1.5;
+  }
+  .dev-answer.show { display: block; }
+  .dev-answer strong { color: var(--accent); }
+
+  .dev-copy-note {
+    display: none; background: rgba(46, 125, 50, 0.15); color: #4caf50; border-radius: 10px;
+    padding: 9px 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px;
+    text-align: center; border: 1px solid #4caf5033;
+  }
+  .dev-copy-note.show { display: block; }
+
+  .dev-actions { display: flex; gap: 10px; }
+  .dev-actions .modal-btn { font-size: 16px; }
+  .dev-actions .modal-btn.telegram {
+    background: var(--btn-gradient); color: #fff;
+    box-shadow: 0 6px 18px var(--btn-shadow);
+  }
+  .dev-actions .modal-btn.telegram:disabled { opacity: .5; box-shadow: none; cursor: default; }
 </style>
 </head>
 <body>
 
-  <!-- ГЛАВНАЯ -->
-  <div id="mainHomePage">
-    <div class="wave-container">
-      <svg class="wave-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
-        <path d="M0,0 L1000,0 L1000,120 C750,180 250,180 0,120 Z" fill="#0084ff" />
-        <path d="M0,0 L1000,0 L1000,40 C750,100 250,100 0,40 Z" fill="#0d8bf0" />
-      </svg>
-      <div class="wave-text">— Оплата проезда —</div>
-    </div>
-
-    <main class="main-body">
-      <div class="logo-box">
-        <div class="logo-inner">QR</div>
+  <section id="demoScreen" class="demo-screen">
+    <div class="demo-card">
+      <h2>Оплата проезда</h2>
+      <p>Нажмите кнопку ниже, чтобы запустить оплату проезда</p>
+      <button id="payButton" class="pay-btn">Оплатить</button>
+      <div id="progressWrap" class="progress-wrap">
+        <div class="progress-track">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div id="progressText" class="progress-text">Подготовка…</div>
       </div>
-      <button class="btn-pay-main" id="startPayBtn">Оплатить</button>
-    </main>
-  </div>
+      <div><button id="devTriggerDemo" class="dev-trigger">Написать разработчику</button></div>
+    </div>
+  </section>
 
-  <!-- ВЫБОР -->
+  <section id="resultScreen" class="demo-screen result-screen hidden">
+    <div class="demo-card">
+      <div class="result-title">Процесс<br>выполнен</div>
+      <div class="result-subtitle">Переход к выбору транспорта…</div>
+    </div>
+  </section>
+
   <section id="selectorScreen" class="selector-screen hidden">
     <div class="selector-card">
       <h2>Выберите транспорт</h2>
@@ -97,41 +277,105 @@
         <button class="type-btn" data-type="trolleybus">Троллейбус</button>
       </div>
       <div id="routeButtons" class="route-buttons hidden"></div>
+      <div><button id="devTriggerSelector" class="dev-trigger">Написать разработчику</button></div>
     </div>
   </section>
 
-  <!-- БИЛЕТ -->
-  <div id="ticketScreen" class="ticket-screen hidden">
-    <div class="ticket-card">
-      <div class="ticket-title" id="ticketRouteTitle">Автобус №18</div>
-      <div class="ticket-price">53 ₽</div>
-      <div class="ticket-info" id="ticketDate">08.11.2026 11:56</div>
-      <div class="ticket-info">Т/С: <span id="ticketVehicle">—</span></div>
-      
-      <div class="ticket-timer">
-        С момента оплаты прошло:
-        <span id="timer">00:00</span>
+  <div id="mainPage" class="hidden">
+    <header class="header-wave">
+      <div class="header-content">— Оплата проезда —</div>
+    </header>
+
+    <main class="main-container">
+      <div class="qr-logo"><div class="qr-logo-inner">QR</div></div>
+
+      <div id="routeTitle" class="route-title">Автобус №18</div>
+      <div class="price">53 ₽</div>
+
+      <div class="info-block">
+        <span id="payDate">—</span><br>
+        Т/С: <span id="vehicleNumber">—</span>
       </div>
 
       <div class="qr-container">
-        <canvas id="realQrCanvas"></canvas>
+        <canvas id="qrCanvas" width="400" height="400" aria-label="QR-код"></canvas>
       </div>
 
-      <div class="bottom-action">
-        <button class="btn-ask-vehicle" id="btnAskVehicle">Спросили т/с?</button>
+      <div class="timer-container">
+        Действителен: <span id="timer" class="timer-value">00:00</span>
+      </div>
+
+      <div id="status" class="status-badge">Оплата подтверждена</div>
+
+      <button id="confirmPayBtn" class="pay-btn">Оплатить</button>
+      <button id="openGarageModalBtn" class="garage-link">Спросили т/с?</button>
+      <div><button id="devTriggerMain" class="dev-trigger">Написать разработчику</button></div>
+    </main>
+  </div>
+
+  <div id="garageModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Т/С (Гаражный номер)</h3>
+      <p>Введите номер, чтобы добавить его к чеку</p>
+      <input id="modalGarageInput" class="modal-input" type="tel" inputmode="numeric" placeholder="Например: 3818" maxlength="5">
+      <div id="modalGarageError" class="modal-error"></div>
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="modal-btn cancel">Отмена</button>
+        <button id="modalSaveBtn" class="modal-btn save">Сохранить</button>
       </div>
     </div>
   </div>
 
-  <!-- МОДАЛКА -->
-  <div id="vehicleModal" class="modal-overlay">
-    <div class="modal-content">
-      <h3>Введите Т/С</h3>
-      <p>Введите номер транспортного средства</p>
-      <input id="modalVehicleInput" type="tel" placeholder="Например: 3506" maxlength="5" class="modal-input">
-      <div class="modal-actions">
-        <button id="modalCancel" class="modal-btn cancel">Отмена</button>
-        <button id="modalSave" class="modal-btn save">Сохранить</button>
+  <div id="devModal" class="modal-overlay">
+    <div class="dev-modal-card">
+      <div class="dev-modal-header">
+        <div class="dev-avatar">DV</div>
+        <div>
+          <h3>Написать разработчику</h3>
+          <div class="dev-username">@Demon_of_latvia</div>
+        </div>
+      </div>
+      <p class="dev-modal-sub">
+        Выберите тему — появится подсказка, а текст проблемы автоматически скопируется в буфер.
+        Затем нажмите «Открыть Telegram» и вставьте его в чат.
+      </p>
+
+      <div id="devReasons" class="dev-reasons">
+        <button class="dev-reason"
+          data-problem="Здравствуйте! Не работает оплата / QR-код на iPhone. Прошу помочь, так как исправить это может только разработчик."
+          data-answer="На <strong>iOS</strong> оплата или QR-код могут не открываться из-за ограничений браузера (Safari / WebView). Это может исправить <strong>только разработчик</strong> — текст проблемы уже скопирован, отправьте его в Telegram.">
+          <span class="dev-reason-ico">1</span>
+          <span>Не работает на iPhone<small>Оплата или QR-код не открывается</small></span>
+        </button>
+
+        <button class="dev-reason"
+          data-problem="Здравствуйте! Подскажите, где найти Т/С (гаражный номер) — не могу его найти."
+          data-answer="<strong>Гаражный номер (Т/С)</strong> указан на QR-коде внутри салона автобуса/троллейбуса — отсканируйте его камерой телефона, и номер появится на открывшейся странице. Также номер часто написан на табличке рядом с QR-кодом. Если найти не удалось — напишите разработчику, текст уже скопирован.">
+          <span class="dev-reason-ico">2</span>
+          <span>Где найти Т/С<small>Не могу найти гаражный номер</small></span>
+        </button>
+
+        <button class="dev-reason"
+          data-problem="Здравствуйте! Прочитал(а) код приложения — есть вопросы / нашёл(ла) проблему, которую может исправить только разработчик."
+          data-answer="Вопросы по коду и найденные ошибки может разобрать <strong>только разработчик</strong>. Опишите проблему в Telegram — текст уже скопирован.">
+          <span class="dev-reason-ico">3</span>
+          <span>Вопросы по коду<small>Прочитал код и нашёл проблему</small></span>
+        </button>
+
+        <button class="dev-reason"
+          data-problem="Здравствуйте! Хочу сообщить о проблеме (опишу своими словами ниже):"
+          data-answer="Опишите проблему <strong>своими словами</strong> в Telegram — разработчик ответит. Текст-заготовка уже скопирован, просто допишите детали.">
+          <span class="dev-reason-ico">4</span>
+          <span>Другое<small>Опишите проблему своими словами</small></span>
+        </button>
+      </div>
+
+      <div id="devAnswer" class="dev-answer"></div>
+      <div id="devCopyNote" class="dev-copy-note">Текст проблемы скопирован — вставьте его в Telegram</div>
+
+      <div class="dev-actions">
+        <button id="devCancelBtn" class="modal-btn cancel">Закрыть</button>
+        <button id="devTelegramBtn" class="modal-btn telegram" disabled>Открыть Telegram</button>
       </div>
     </div>
   </div>
@@ -139,16 +383,60 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   
-  document.getElementById('startPayBtn').addEventListener('click', () => {
-    document.getElementById('mainHomePage').classList.add('hidden');
-    document.getElementById('selectorScreen').classList.remove('hidden');
-  });
+  // === ОСНОВНАЯ ЛОГИКА ===
+  const demoScreen     = document.getElementById('demoScreen');
+  const resultScreen   = document.getElementById('resultScreen');
+  const selectorScreen = document.getElementById('selectorScreen');
+  const mainPage       = document.getElementById('mainPage');
+
+  const payButton    = document.getElementById('payButton');
+  const confirmPayBtn= document.getElementById('confirmPayBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar  = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
 
   const routeButtons  = document.getElementById('routeButtons');
+  const routeTitle    = document.getElementById('routeTitle');
+  const vehicleNumber = document.getElementById('vehicleNumber');
   const typeButtons   = document.querySelectorAll('.type-btn');
+  const statusBadge   = document.getElementById('status');
+
+  const openGarageModalBtn = document.getElementById('openGarageModalBtn');
+  const garageModal        = document.getElementById('garageModal');
+  const modalGarageInput   = document.getElementById('modalGarageInput');
+  const modalGarageError   = document.getElementById('modalGarageError');
+  const modalCancelBtn     = document.getElementById('modalCancelBtn');
+  const modalSaveBtn       = document.getElementById('modalSaveBtn');
+
+  payButton.addEventListener('click', () => {
+    payButton.disabled = true;
+    payButton.style.opacity = '.65';
+    progressWrap.style.display = 'block';
+
+    const stages = ['Подготовка…', 'Проверка данных…', 'Завершение…'];
+    let progress = 0;
+
+    const interval = setInterval(() => {
+      progress += 2;
+      progressBar.style.width = progress + '%';
+      progressText.textContent = stages[Math.min(2, Math.floor(progress / 34))];
+
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          demoScreen.style.display = 'none';
+          resultScreen.classList.remove('hidden');
+          setTimeout(() => {
+            resultScreen.classList.add('hidden');
+            selectorScreen.classList.remove('hidden');
+          }, 1500);
+        }, 400);
+      }
+    }, 35);
+  });
+
   const transportRoutes = { bus: ['18', '1', '10', '27', '5', '33', '29', '11'], trolleybus: ['3', '6', '4', '10'] };
   const typeLabels = { bus: 'Автобус', trolleybus: 'Троллейбус' };
-  const ticketVehicle = document.getElementById('ticketVehicle');
 
   typeButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -156,22 +444,26 @@ document.addEventListener('DOMContentLoaded', () => {
       button.classList.add('active');
       const type = button.dataset.type;
       routeButtons.innerHTML = '';
-      
       transportRoutes[type].forEach(number => {
         const routeButton = document.createElement('button');
         routeButton.className = 'route-btn';
         routeButton.textContent = typeLabels[type] + ' ' + number;
-        
         routeButton.addEventListener('click', () => {
-          document.getElementById('selectorScreen').classList.add('hidden');
-          document.getElementById('ticketScreen').classList.remove('hidden');
+          routeTitle.textContent = typeLabels[type] + ' №' + number;
+
+          vehicleNumber.textContent = '—';
+          openGarageModalBtn.textContent = 'Спросили т/с?';
+
+          selectorScreen.classList.add('hidden');
+          mainPage.classList.remove('hidden');
+
+          statusBadge.style.display = 'none';
+          confirmPayBtn.style.display = 'block';
+          confirmPayBtn.disabled = false;
+          confirmPayBtn.style.opacity = '1';
           
-          document.getElementById('ticketRouteTitle').textContent = typeLabels[type] + ' №' + number;
-          document.getElementById('ticketDate').textContent = new Date().toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}).replace(',', '');
-          
-          ticketVehicle.textContent = '—';
-          
-          drawRealQR();
+          document.getElementById('payDate').textContent = formatMoscowDate(nowMoscow());
+          drawQR();
           startTimer();
         });
         routeButtons.appendChild(routeButton);
@@ -180,90 +472,208 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Модалка
-  const vehicleModal = document.getElementById('vehicleModal');
-  const modalVehicleInput = document.getElementById('modalVehicleInput');
-  const btnAskVehicle = document.getElementById('btnAskVehicle');
-
-  btnAskVehicle.addEventListener('click', () => {
-    vehicleModal.classList.add('open');
-    modalVehicleInput.value = ticketVehicle.textContent !== '—' ? ticketVehicle.textContent : '';
-    modalVehicleInput.focus();
+  openGarageModalBtn.addEventListener('click', () => {
+    garageModal.classList.add('open');
+    modalGarageInput.value = vehicleNumber.textContent !== '—' ? vehicleNumber.textContent : '';
+    modalGarageInput.focus();
+    modalGarageError.textContent = '';
   });
 
-  document.getElementById('modalCancel').addEventListener('click', () => {
-    vehicleModal.classList.remove('open');
+  function closeModal() { garageModal.classList.remove('open'); modalGarageError.textContent = ''; }
+  modalCancelBtn.addEventListener('click', closeModal);
+  garageModal.addEventListener('click', (e) => { if (e.target === garageModal) closeModal(); });
+
+  modalGarageInput.addEventListener('input', () => {
+    modalGarageInput.value = modalGarageInput.value.replace(/\D/g, '');
+    modalGarageError.textContent = '';
   });
 
-  document.getElementById('modalSave').addEventListener('click', () => {
-    let val = modalVehicleInput.value.trim();
-    if (val === '') {
-      ticketVehicle.textContent = '—';
-    } else {
-      ticketVehicle.textContent = val;
+  modalSaveBtn.addEventListener('click', () => {
+    const val = modalGarageInput.value.trim();
+    if (!/^\d{3,5}$/.test(val)) { modalGarageError.textContent = 'Номер должен содержать от 3 до 5 цифр'; return; }
+
+    vehicleNumber.textContent = val;
+    openGarageModalBtn.textContent = 'Изменить т/с (' + val + ')';
+    closeModal();
+  });
+
+  confirmPayBtn.addEventListener('click', () => {
+    confirmPayBtn.style.display = 'none';
+    statusBadge.style.display = 'inline-block';
+  });
+
+  // --- QR-КОД ---
+  function drawQR() {
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const modules = 33;
+    const cell = size / modules;
+    let seed = 20261028;
+
+    function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+
+    const grid = [];
+    for (let y = 0; y < modules; y++) {
+      grid[y] = [];
+      for (let x = 0; x < modules; x++) { grid[y][x] = rand() > 0.5 ? 1 : 0; }
     }
-    vehicleModal.classList.remove('open');
-  });
 
-  // Только цифры в инпуте
-  modalVehicleInput.addEventListener('input', function(e) {
-    this.value = this.value.replace(/\D/g, '');
-  });
+    function clearBox(cx, cy, w, h) {
+      for (let y = cy; y < cy + h; y++) {
+        for (let x = cx; x < cx + w; x++) {
+          if (grid[y] && grid[y][x] !== undefined) grid[y][x] = 0;
+        }
+      }
+    }
 
-  // Таймер
+    function finder(cx, cy) {
+      clearBox(cx - 1, cy - 1, 9, 9);
+      for (let y = 0; y < 7; y++) {
+        for (let x = 0; x < 7; x++) {
+          const edge = (x === 0 || x === 6 || y === 0 || y === 6);
+          const inner = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+          if (edge || inner) grid[cy + y][cx + x] = 1;
+        }
+      }
+    }
+
+    finder(0, 0); finder(modules - 7, 0); finder(0, modules - 7);
+
+    function align(cx, cy) {
+      clearBox(cx - 1, cy - 1, 7, 7);
+      for (let y = 0; y < 5; y++) {
+        for (let x = 0; x < 5; x++) {
+          const edge = (x === 0 || x === 4 || y === 0 || y === 4);
+          const center = (x === 2 && y === 2);
+          if (edge || center) grid[cy + y][cx + x] = 1;
+        }
+      }
+    }
+    align(modules - 9, modules - 9);
+
+    ctx.fillStyle = '#111111';
+    for (let y = 0; y < modules; y++) {
+      for (let x = 0; x < modules; x++) {
+        if (grid[y][x]) {
+          ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+  }
+
+  // --- ТАЙМЕР ---
   let timerInterval;
   function startTimer() {
     clearInterval(timerInterval);
     const timerElement = document.getElementById('timer');
     let totalSeconds = 0;
     timerElement.textContent = '00:00';
+
     timerInterval = setInterval(() => {
       totalSeconds++;
-      if (totalSeconds >= 20 * 60) { clearInterval(timerInterval); return; }
+      if (totalSeconds >= 20 * 60) {
+        clearInterval(timerInterval);
+        return;
+      }
       const m = Math.floor(totalSeconds / 60);
       const s = totalSeconds % 60;
       timerElement.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }, 1000);
   }
 
-  // Отрисовка QR
-  function drawRealQR() {
-    const canvas = document.getElementById('realQrCanvas');
-    const ctx = canvas.getContext('2d');
-    const size = 400; 
-    canvas.width = size;
-    canvas.height = size;
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, size, size);
-    
-    ctx.fillStyle = '#111111';
-    const cellSize = size / 33; 
-    
-    function drawEye(x, y) {
-      ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect((x + 1) * cellSize, (y + 1) * cellSize, 5 * cellSize, 5 * cellSize);
-      ctx.fillStyle = '#111111';
-      ctx.fillRect((x + 2) * cellSize, (y + 2) * cellSize, 3 * cellSize, 3 * cellSize);
-    }
-    
-    for (let i = 0; i < 33; i++) {
-      for (let j = 0; j < 33; j++) {
-        if (i < 8 && j < 8) continue;
-        if (i > 24 && j < 8) continue;
-        if (i < 8 && j > 24) continue;
-        if (Math.random() > 0.5) {
-          ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-    
-    drawEye(1, 1);
-    drawEye(25, 1);
-    drawEye(1, 25);
+  // --- ДАТА ---
+  function nowMoscow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })); }
+  function formatMoscowDate(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ` + `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
+  // ========================
+  // БЛОК «НАПИСАТЬ РАЗРАБОТЧИКУ»
+  // ========================
+  const TELEGRAM_URL = 'https://t.me/Demon_of_latvia';
+  const devModal        = document.getElementById('devModal');
+  const devReasons      = document.getElementById('devReasons');
+  const devAnswer       = document.getElementById('devAnswer');
+  const devCopyNote     = document.getElementById('devCopyNote');
+  const devCancelBtn    = document.getElementById('devCancelBtn');
+  const devTelegramBtn  = document.getElementById('devTelegramBtn');
+
+  const devTriggers = [
+    document.getElementById('devTriggerDemo'),
+    document.getElementById('devTriggerSelector'),
+    document.getElementById('devTriggerMain')
+  ].filter(Boolean);
+
+  function resetDevModal() {
+    devAnswer.classList.remove('show');
+    devAnswer.innerHTML = '';
+    devCopyNote.classList.remove('show');
+    devTelegramBtn.disabled = true;
+    devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+  }
+
+  function openDevModal() {
+    resetDevModal();
+    devModal.classList.add('open');
+  }
+
+  function closeDevModal() { devModal.classList.remove('open'); }
+
+  devTriggers.forEach(btn => btn.addEventListener('click', openDevModal));
+  devCancelBtn.addEventListener('click', closeDevModal);
+  devModal.addEventListener('click', (e) => { if (e.target === devModal) closeDevModal(); });
+
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  devReasons.querySelectorAll('.dev-reason').forEach(btn => {
+    btn.addEventListener('click', () => {
+      devReasons.querySelectorAll('.dev-reason').forEach(el => el.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      const problem = btn.dataset.problem || btn.textContent.trim();
+      const answer  = btn.dataset.answer || '';
+
+      devAnswer.innerHTML = answer;
+      devAnswer.classList.add('show');
+
+      const fullText = problem + '\n\n(Из приложения «Оплата проезда»)';
+      copyToClipboard(fullText);
+
+      devCopyNote.classList.add('show');
+      devTelegramBtn.disabled = false;
+    });
+  });
+
+  devTelegramBtn.addEventListener('click', () => {
+    window.open(TELEGRAM_URL, '_blank', 'noopener');
+  });
 });
 </script>
 </body>
